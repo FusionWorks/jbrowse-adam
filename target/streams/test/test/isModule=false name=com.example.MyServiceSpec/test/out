@@ -1,0 +1,105 @@
+[0m[[0minfo[0m] [0mMyServiceSpec[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mMyService should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[33mx[0m return a greeting for GET requests to the root path[0m[0m
+[0m[[31merror[0m] [0m   '<!DOCTYPE html>[0m
+[0m[[31merror[0m] [0m   <html>[0m
+[0m[[31merror[0m] [0m     <head>[0m
+[0m[[31merror[0m] [0m       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">[0m
+[0m[[31merror[0m] [0m       <title>JBrowse</title>[0m
+[0m[[31merror[0m] [0m       <link rel="stylesheet" type="text/css" href="genome.css">[0m
+[0m[[31merror[0m] [0m       <script type="text/javascript" src="src/dojo/dojo.js" data-dojo-config="async: 1, baseUrl: './src'"></script>[0m
+[0m[[31merror[0m] [0m       <script type="text/javascript" src="src/JBrowse/init.js"></script>[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m       <script type="text/javascript">[0m
+[0m[[31merror[0m] [0m           window.onerror=function(msg){[0m
+[0m[[31merror[0m] [0m               if( document.body )[0m
+[0m[[31merror[0m] [0m                   document.body.setAttribute("JSError",msg);[0m
+[0m[[31merror[0m] [0m           }[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m           // puts the main Browser object in this for convenience.  feel[0m
+[0m[[31merror[0m] [0m           // free to move it into function scope if you want to keep it[0m
+[0m[[31merror[0m] [0m           // out of the global namespace[0m
+[0m[[31merror[0m] [0m           var JBrowse;[0m
+[0m[[31merror[0m] [0m           require(['JBrowse/Browser', 'dojo/io-query', 'dojo/json' ],[0m
+[0m[[31merror[0m] [0m                function (Browser,ioQuery,JSON) {[0m
+[0m[[31merror[0m] [0m                      // the initial configuration of this JBrowse[0m
+[0m[[31merror[0m] [0m                      // instance[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                      // NOTE: this initial config is the same as any[0m
+[0m[[31merror[0m] [0m                      // other JBrowse config in any other file.  this[0m
+[0m[[31merror[0m] [0m                      // one just sets defaults from URL query params.[0m
+[0m[[31merror[0m] [0m                      // If you are embedding JBrowse in some other app,[0m
+[0m[[31merror[0m] [0m                      // you might as well just set this initial config[0m
+[0m[[31merror[0m] [0m                      // to something like { include: '../my/dynamic/conf.json' },[0m
+[0m[[31merror[0m] [0m                      // or you could put the entire[0m
+[0m[[31merror[0m] [0m                      // dynamically-generated JBrowse config here.[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                      // parse the query vars in the page URL[0m
+[0m[[31merror[0m] [0m                      var queryParams = ioQuery.queryToObject( window.location.search.slice(1) );[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                      var config = {[0m
+[0m[[31merror[0m] [0m                          containerID: "GenomeBrowser",[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                          dataRoot: queryParams.data,[0m
+[0m[[31merror[0m] [0m                          queryParams: queryParams,[0m
+[0m[[31merror[0m] [0m                          location: queryParams.loc,[0m
+[0m[[31merror[0m] [0m                          forceTracks: queryParams.tracks,[0m
+[0m[[31merror[0m] [0m                          initialHighlight: queryParams.highlight,[0m
+[0m[[31merror[0m] [0m                          show_nav: queryParams.nav,[0m
+[0m[[31merror[0m] [0m                          show_tracklist: queryParams.tracklist,[0m
+[0m[[31merror[0m] [0m                          show_overview: queryParams.overview,[0m
+[0m[[31merror[0m] [0m                          show_menu: queryParams.menu,[0m
+[0m[[31merror[0m] [0m                          stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },[0m
+[0m[[31merror[0m] [0m                          makeFullViewURL: function( browser ) {[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                              // the URL for the 'Full view' link[0m
+[0m[[31merror[0m] [0m                              // in embedded mode should be the current[0m
+[0m[[31merror[0m] [0m                              // view URL, except with 'nav', 'tracklist',[0m
+[0m[[31merror[0m] [0m                              // and 'overview' parameters forced to 1.[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                              return browser.makeCurrentViewURL({ nav: 1, tracklist: 1, overview: 1 });[0m
+[0m[[31merror[0m] [0m                          },[0m
+[0m[[31merror[0m] [0m                          updateBrowserURL: true[0m
+[0m[[31merror[0m] [0m                      };[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                      //if there is ?addFeatures in the query params,[0m
+[0m[[31merror[0m] [0m                      //define a store for data from the URL[0m
+[0m[[31merror[0m] [0m                      if( queryParams.addFeatures ) {[0m
+[0m[[31merror[0m] [0m                          config.stores.url.features = JSON.parse( queryParams.addFeatures );[0m
+[0m[[31merror[0m] [0m                      }[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                      // if there is ?addTracks in the query params, add[0m
+[0m[[31merror[0m] [0m                      // those track configurations to our initial[0m
+[0m[[31merror[0m] [0m                      // configuration[0m
+[0m[[31merror[0m] [0m                      if( queryParams.addTracks ) {[0m
+[0m[[31merror[0m] [0m                          config.tracks = JSON.parse( queryParams.addTracks );[0m
+[0m[[31merror[0m] [0m                      }[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                      // if there is ?addStores in the query params, add[0m
+[0m[[31merror[0m] [0m                      // those store configurations to our initial[0m
+[0m[[31merror[0m] [0m                      // configuration[0m
+[0m[[31merror[0m] [0m                      if( queryParams.addStores ) {[0m
+[0m[[31merror[0m] [0m                          config.stores = JSON.parse( queryParams.addStores );[0m
+[0m[[31merror[0m] [0m                      }[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m                      // create a JBrowse global variable holding the JBrowse instance[0m
+[0m[[31merror[0m] [0m                      JBrowse = new Browser( config );[0m
+[0m[[31merror[0m] [0m           });[0m
+[0m[[31merror[0m] [0m       </script>[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m     </head>[0m
+[0m[[31merror[0m] [0m   [0m
+[0m[[31merror[0m] [0m     <body>[0m
+[0m[[31merror[0m] [0m       <div id="GenomeBrowser" style="height: 100%; width: 100%; padding: 0; border: 0;"></div>[0m
+[0m[[31merror[0m] [0m       <div style="display: none">JBrowseDefaultMainPage</div>[0m
+[0m[[31merror[0m] [0m     </body>[0m
+[0m[[31merror[0m] [0m   </html>[0m
+[0m[[31merror[0m] [0m   ' doesn't contain 'Say hello' (MyServiceSpec.scala:15)[0m
+[0m[[0minfo[0m] [0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m leave GET requests to other paths unhandled[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m return a MethodNotAllowed error for PUT requests to the root path[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0mTotal for specification MyServiceSpec[0m
+[0m[[0minfo[0m] [0m[36mFinished in 661 ms[0m[0m
+[0m[[0minfo[0m] [0m[36m[0m[36m3 examples, 1 failure, 0 error[0m[0m
