@@ -31,9 +31,9 @@ trait MyService extends HttpService {
 
     path("") {
 
-      getFromResource("JBrowse-1.11.6/index.html")
+      getFromResource("jbrowse/index.html")
     } ~ {
-      getFromResourceDirectory("JBrowse-1.11.6/")
+      getFromResourceDirectory("jbrowse/")
     }
   }
 
