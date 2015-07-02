@@ -8,7 +8,7 @@ object jsonProtocol extends DefaultJsonProtocol {
   implicit val trakListFormat = jsonFormat1(TrackList)
 }
 
-object jbrowseUtil{
+object JbrowseUtil{
   def getTrackList = {
     TrackList(tracks = List(Track("mygene_track",
     "Genes",
