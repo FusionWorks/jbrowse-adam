@@ -1,15 +1,12 @@
-package com.example
+package md.fusionworks.adam.jbrowse
 
 import akka.actor.Actor
 import spray.routing._
-import spray.http._
-import MediaTypes._
-import spray.json._
 
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class MyServiceActor extends Actor with MyService {
+class ServiceActor extends Actor with Service {
 
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
@@ -18,27 +15,33 @@ class MyServiceActor extends Actor with MyService {
   // this actor only runs our route, but you could add
   // other things here, like request stream processing
   // or timeout handling
-  def receive = runRoute(myRoute ~ filejosan)
+  def receive = runRoute(route)
 
 
 }
 
 
 // this trait defines our service behavior independently from the service actor
-trait MyService extends HttpService {
 
-  val myRoute = {
+import md.fusionworks.adam.jbrowse.models.JbrowseUtil
 
-    path("") {
 
-      getFromResource("jbrowse/index.html")
-    } ~ {
+trait Service extends HttpService {
+
+  val route = {
+    get {
+      path("data" / "trackList.json") {
+        complete {
+          JbrowseUtil.getTrackList.toString
+        }
+      }
+    } ~
+      path("") {
+        getFromResource("jbrowse/index.html")
+      } ~ {
       getFromResourceDirectory("jbrowse/")
     }
   }
 
 }
-
-
-
 
