@@ -4,7 +4,7 @@ import org.specs2.mutable.Specification
 import spray.http.StatusCodes._
 import spray.testkit.Specs2RouteTest
 
-class MyServiceSpec extends Specification with Specs2RouteTest with Service {
+class ServiceSpec extends Specification with Specs2RouteTest with Service {
   def actorRefFactory = system
   
   "MyService" should {

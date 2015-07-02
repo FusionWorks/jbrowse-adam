@@ -23,7 +23,7 @@ class ServiceActor extends Actor with Service {
 
 // this trait defines our service behavior independently from the service actor
 
-import md.fusionworks.adam.jbrowse.models.OTrakList
+import md.fusionworks.adam.jbrowse.models.jbrowseUtil
 
 
 trait Service extends HttpService {
@@ -32,7 +32,7 @@ trait Service extends HttpService {
     get {
       path("data" / "trackList.json") {
         complete {
-          OTrakList.TraklistJosn().toString
+          jbrowseUtil.getTrackList.toString
         }
       }
     } ~
