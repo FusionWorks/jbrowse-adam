@@ -1,6 +1,0 @@
-[0m[[0mdebug[0m] [0mRunning TaskDef(com.example.MyServiceSpec, specs2 Specification fingerprint, false, [SuiteSelector])[0m
-[0m[[0mdebug[0m] [0mSummary for specs2 not available.[0m
-[0m[[31merror[0m] [0mFailed: Total 3, Failed 1, Errors 0, Passed 2[0m
-[0m[[31merror[0m] [0mFailed tests:[0m
-[0m[[31merror[0m] [0m	com.example.MyServiceSpec[0m
-[0m[[31merror[0m] [0m(test:[31mtest[0m) sbt.TestsFailedException: Tests unsuccessful[0m
