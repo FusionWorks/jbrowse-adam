@@ -1,8 +1,10 @@
 package md.fusionworks.adam.jbrowse
 
 import akka.actor.Actor
+import md.fusionworks.adam.jbrowse.models.JsonProtocol._
+import md.fusionworks.adam.jbrowse.models._
+import spray.httpx.SprayJsonSupport._
 import spray.routing._
-
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -16,14 +18,12 @@ class ServiceActor extends Actor with Service {
   // other things here, like request stream processing
   // or timeout handling
   def receive = runRoute(route)
-
-
 }
 
 
 // this trait defines our service behavior independently from the service actor
 
-import md.fusionworks.adam.jbrowse.models.JbrowseUtil
+
 
 
 trait Service extends HttpService {
@@ -32,10 +32,24 @@ trait Service extends HttpService {
     get {
       path("data" / "trackList.json") {
         complete {
-          JbrowseUtil.getTrackList.toString
+          JbrowseUtil.getTrackList
         }
       }
     } ~
+      get {
+      path("data" / "seq" / "refSeqs.json") {
+        complete {
+          JbrowseUtil.getRefSeqs
+        }
+      }
+    } ~
+      get {
+        path("data" / "tracks.conf") {
+          complete {
+            JbrowseUtil.getTracksConf
+          }
+        }
+      } ~
       path("") {
         getFromResource("jbrowse/index.html")
       } ~ {
