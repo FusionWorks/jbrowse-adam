@@ -7,7 +7,7 @@ import spray.testkit.Specs2RouteTest
 class ServiceSpec extends Specification with Specs2RouteTest with Service {
   def actorRefFactory = system
   
-  "MyService" should {
+  "Service" should {
 
     "return a greeting for GET requests to the root path" in {
       Get() ~> route ~> check {
