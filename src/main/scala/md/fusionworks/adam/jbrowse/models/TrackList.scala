@@ -7,9 +7,12 @@ object JsonProtocol extends DefaultJsonProtocol {
   implicit val queryFormat = jsonFormat3(Query)
   implicit val trackFormat = jsonFormat6(Track)
   implicit val trakListFormat = jsonFormat1(TrackList)
-  implicit val refSeqsFormat=jsonFormat3(RefSeqs)
+  implicit val refSeqsFormat = jsonFormat6(RefSeqs)
   implicit val tracksConfFormat = jsonFormat5(TracksConf)
   implicit val globalFormat = jsonFormat6(Global)
+  implicit val subFeaturesFormat = jsonFormat6(SubFeatures)
+  implicit val featureFormat = jsonFormat9(Feature)
+  implicit val featuresFormat = jsonFormat1(Features)
 }
 
 object JbrowseUtil {
@@ -18,19 +21,21 @@ object JbrowseUtil {
       "Genes",
       "JBrowse/View/Track/HTMLFeatures",
       "JBrowse/Store/SeqFeature/REST",
-      "http://my.site.com/rest/api/base",
+      "http://localhost:8080/data",
       List(Query("tyrannosaurus", Some("gene")))
     ), Track("my_sequence_track",
       "DNA",
       "JBrowse/View/Track/Sequence",
       "JBrowse/Store/SeqFeature/REST",
-      "http://my.site.com/rest/api/base",
+      "http://localhost:8080/data",
       List(Query("tyrannosaurus", sequence = Some(true))))))
   }
-  def getRefSeqs={
-    RefSeqs("chr1",0,12345678)
+
+  def getRefSeqs = {
+    List(RefSeqs(50001, "ctgA", "seq/ctgA", 20000, 50001, 0), RefSeqs(66, "ctgB", "seq/ctgB", 20000, 66, 0))
   }
-  def getTracksConf={
+
+  def getTracksConf = {
     TracksConf(
       "JBrowse/Store/SeqFeature/BigWig",
       "../../my-bigwig-file.bw",
@@ -39,16 +44,17 @@ object JbrowseUtil {
       "Coverage plot of NGS alignments from XYZ"
     )
   }
-  def getGlobal={
-    Global(0.02,234235,87,87,42,2.1)
+
+  def getGlobal = {
+    Global(0.02, 234235, 87, 87, 42, 2.1)
   }
 
-  def getFeatures={
+  def getFeatures = {
     Features(features = List(
       Feature(None, None, 123, 456, None, None, None, None, None),
-      Feature(None, None, 123, 456, Some(42),None, None, None, None),
-      Feature(Some("gattacagattaca"),None,0,14,None,None,None,None),
-      Feature(None, Some("mRNA"),5975,9744,Some(0.84),Some(1),Some("au9.g1002.t1"),Some("globallyUniqueString3"),
+      Feature(None, None, 123, 456, Some(42), None, None, None, None),
+      Feature(Some("gattacagattaca"), None, 0, 14, None, None, None, None),
+      Feature(None, Some("mRNA"), 5975, 9744, Some(0.84), Some(1), Some("au9.g1002.t1"), Some("globallyUniqueString3"),
         subfeatures = Some(List(SubFeatures(
           "five_prime_UTR",
           5975,
@@ -203,10 +209,14 @@ case class Query(
                   sequence: Option[Boolean] = None
                   )
 
+
 case class RefSeqs(
-                    name:String,
-                    start:Int,
-                    end:Int
+                    length: Int,
+                    name: String,
+                    seqDi: String,
+                    seqChunkSize: Int,
+                    end: Int,
+                    start: Int
                     )
 
 
@@ -232,23 +242,23 @@ case class Features(
                      )
 
 case class Feature(
-                    seq: Option[String]=None,
-                    `type`: Option[String]=None,
+                    seq: Option[String] = None,
+                    `type`: Option[String] = None,
                     start: Int,
                     end: Int,
-                    score: Option[Double]=None,
-                    strand: Option[Int]=None,
-                    name: Option[String]=None,
-                    uniqueID: Option[String]=None,
-                    subfeatures: Option[List[SubFeatures]]=None
+                    score: Option[Double] = None,
+                    strand: Option[Int] = None,
+                    name: Option[String] = None,
+                    uniqueID: Option[String] = None,
+                    subfeatures: Option[List[SubFeatures]] = None
                     )
 
 case class SubFeatures(
                         `type`: String,
                         start: Int,
                         end: Int,
-                        score: Option[Double]=None,
+                        score: Option[Double] = None,
                         strand: Int,
-                        phase: Option[Int]=None
+                        phase: Option[Int] = None
                         )
 
