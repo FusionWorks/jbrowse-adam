@@ -23,9 +23,6 @@ class ServiceActor extends Actor with Service {
 
 // this trait defines our service behavior independently from the service actor
 
-
-
-
 trait Service extends HttpService {
 
   val route = {
@@ -37,17 +34,36 @@ trait Service extends HttpService {
       }
     } ~
       get {
-      path("data" / "seq" / "refSeqs.json") {
-        complete {
-          JbrowseUtil.getRefSeqs
+        path("data" / "seq" / "refSeqs.json") {
+          complete {
+            JbrowseUtil.getRefSeqs
+          }
         }
-      }
-    } ~
+      } ~
       get {
         path("data" / "tracks.conf") {
           complete {
             JbrowseUtil.getTracksConf
           }
+        }
+      } ~
+      get {
+        path("data" / "stats" / "global") {
+          complete {
+            JbrowseUtil.getGlobal
+          }
+        }
+      } ~
+      get {
+        path("data" / "features") {
+          complete {
+            JbrowseUtil.getFeatures
+          }
+        }
+      } ~
+      path("data" / "features" / Rest) { pathRest =>
+        parameters('start, 'end) { (start, end) =>
+          complete(s"The start is '$start' the end is '$end'   $pathRest")
         }
       } ~
       path("") {
