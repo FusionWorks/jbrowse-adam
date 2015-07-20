@@ -41,13 +41,6 @@ trait Service extends HttpService {
         }
       } ~
       get {
-        path("data" / "tracks.conf") {
-          complete {
-            JbrowseUtil.getTracksConf
-          }
-        }
-      } ~
-      get {
         path("data" / "stats" / "global") {
           complete {
             JbrowseUtil.getGlobal
