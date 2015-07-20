@@ -54,7 +54,7 @@ object JbrowseUtil {
   def getFeatures(getFactStat: Long, getFactEnd: Long) = {
 
 
-    val regist = sqc.sql("SELECT sequence, start, `end` FROM ADaM_Table WHERE start >= \""+getFactStat+"\" AND `end` <= \""+getFactEnd+"\" ")
+    val regist = sqc.sql(s"SELECT sequence, start, `end` FROM ADaM_Table WHERE start >= $getFactStat AND start <= $getFactEnd ORDER BY start ASC ")
 
     val sampledata= regist.map(x => Feature(x.getString(0),x.getLong(1),x.getLong(2))).collect().toList
     Features(features = sampledata)
