@@ -41,29 +41,15 @@ trait Service extends HttpService {
         }
       } ~
       get {
-        path("data" / "tracks.conf") {
-          complete {
-            JbrowseUtil.getTracksConf
-          }
-        }
-      } ~
-      get {
         path("data" / "stats" / "global") {
           complete {
             JbrowseUtil.getGlobal
           }
         }
       } ~
-      get {
-        path("data" / "features") {
-          complete {
-            JbrowseUtil.getFeatures
-          }
-        }
-      } ~
       path("data" / "features" / Rest) { pathRest =>
-        parameters('start, 'end) { (start, end) =>
-          complete(s"The start is '$start' the end is '$end'   $pathRest")
+          parameters('start, 'end) { (start, end) =>
+          complete(JbrowseUtil.getFeatures(start.toLong, end.toLong))
         }
       } ~
       path("") {
