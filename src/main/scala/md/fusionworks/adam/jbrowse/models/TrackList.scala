@@ -1,5 +1,6 @@
 package md.fusionworks.adam.jbrowse.models
 
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bdgenomics.adam.rdd.ADAMContext
 import spray.json.DefaultJsonProtocol
@@ -20,8 +21,11 @@ object JsonProtocol extends DefaultJsonProtocol {
 object JbrowseUtil {
   val conf = new SparkConf().setAppName("Simple Application").setMaster("local[2]")
   val sc = new SparkContext(conf)
+  val sqc = new SQLContext(sc)
   val ac = new ADAMContext(sc)
   val reads = ac.loadAlignments("adamtest.adam")
+  val test = sqc.read.parquet("adamtest.adam")
+  test.registerTempTable("UserTable")
   val end = reads.map(_.getEnd).filter(_ != null).max
   val start = 0
 
@@ -64,11 +68,9 @@ object JbrowseUtil {
 
   def getFeatures(getFactStat: Long, getFactEnd: Long) = {
 
-    val sampleParameters = reads
-     .filter(g=> g.getStart != null && g.getStart >= getFactStat && g.getEnd != null && g.getEnd <= getFactEnd)
-         .map(x => Feature(x.getSequence,x.getStart,x.getEnd)).collect().toList
-
-    Features(features = sampleParameters)
+    val regist = sqc.sql("SELECT sequence, start, `end` FROM UserTable WHERE start >= \""+getFactStat+"\" AND `end` <= \""+getFactEnd+"\"")
+    val sampledata= regist.map(x => Feature(x.getString(0),x.getLong(1),x.getLong(2))).collect().toList
+    Features(features = sampledata)
 
   }
 
