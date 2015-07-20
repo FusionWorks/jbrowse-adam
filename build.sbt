@@ -18,7 +18,8 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
     "org.specs2" %% "specs2-core" % "2.3.11" % "test",
     "io.spray" %% "spray-json" % "1.3.2",
-    "org.bdgenomics.adam" % "adam-core" % "0.16.0"
+    "org.bdgenomics.adam" % "adam-core" % "0.16.0",
+    "org.apache.spark" %% "spark-sql" % "1.4.1"
   )
 }
 
