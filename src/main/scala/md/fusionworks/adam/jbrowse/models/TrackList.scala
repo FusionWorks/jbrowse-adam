@@ -2,7 +2,10 @@ package md.fusionworks.adam.jbrowse.models
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
+import org.bdgenomics.adam.rdd.ADAMContext
+import org.bdgenomics.formats.avro.AlignmentRecord
 import spray.json.DefaultJsonProtocol
+
 
 
 object JsonProtocol extends DefaultJsonProtocol {
@@ -11,7 +14,7 @@ object JsonProtocol extends DefaultJsonProtocol {
   implicit val trakListFormat = jsonFormat1(TrackList)
   implicit val refSeqsFormat = jsonFormat6(RefSeqs)
   implicit val globalFormat = jsonFormat6(Global)
-  implicit val featureFormat = jsonFormat3(Feature)
+  implicit val featureFormat = jsonFormat9(Feature)
   implicit val featuresFormat = jsonFormat1(Features)
 }
 
@@ -24,10 +27,9 @@ object JbrowseUtil {
   val end = sqc.sql("SELECT MAX(`end`) FROM ADaM_Table").collect().apply(0).getLong(0)
   val start = sqc.sql("SELECT MIN(start) FROM ADaM_Table").collect().apply(0).getLong(0)
 
-
   def getTrackList = {
     TrackList(tracks = List(
-        Track(
+      Track(
         "mygene_track",
         "My ADAM Genes",
         "JBrowse/View/Track/HTMLFeatures",
@@ -52,9 +54,10 @@ object JbrowseUtil {
   }
 
   def getFeatures(getFactStat: Long, getFactEnd: Long) = {
-    val regist = sqc.sql(s"SELECT sequence, start, `end` FROM ADaM_Table WHERE start >= $getFactStat AND start <= $getFactEnd ORDER BY start ASC ")
 
-    val sampledata= regist.map(x => Feature(x.getString(0),x.getLong(1),x.getLong(2))).collect().toList
+    val regist = sqc.sql(s"SELECT readName, sequence, start, `end`, cigar, mapq, mateAlignmentStart, qual FROM ADaM_Table WHERE start >= $getFactStat AND start <= $getFactEnd ORDER BY start ASC ")
+
+    val sampledata= regist.collect().map(x => Feature(x.getString(0),x.getString(1),x.getLong(2),x.getLong(3),x.getString(4),x.getInt(5),x.getLong(6),x.getString(0)+"_"+x.getLong(2),x.getString(7).map(_-33).mkString(" "))).toList
     Features(features = sampledata)
 
   }
@@ -102,13 +105,18 @@ case class Global(
 
 
 case class Features(
-                   features: List[Feature]
+                     features: List[Feature]
                      )
 
 
 case class Feature(
-                  seq: String,
-                  start: Long,
-                  end: Long
+                    name: String,
+                    seq: String,
+                    start: Long,
+                    end: Long,
+                    cigar: String,
+                    map_qual: Int,
+                    mate_start: Long,
+                    uniqueID: String,
+                    qual: String
                     )
-

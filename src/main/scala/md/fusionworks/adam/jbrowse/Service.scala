@@ -48,7 +48,7 @@ trait Service extends HttpService {
         }
       } ~
       path("data" / "features" / Rest) { pathRest =>
-          parameters('start, 'end) { (start, end) =>
+        parameters('start, 'end) { (start, end) =>
           complete(JbrowseUtil.getFeatures(start.toLong, end.toLong))
         }
       } ~
@@ -60,4 +60,3 @@ trait Service extends HttpService {
   }
 
 }
-
