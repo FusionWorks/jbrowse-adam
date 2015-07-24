@@ -2,10 +2,7 @@ package md.fusionworks.adam.jbrowse.models
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
-import org.bdgenomics.adam.rdd.ADAMContext
-import org.bdgenomics.formats.avro.AlignmentRecord
 import spray.json.DefaultJsonProtocol
-
 
 
 object JsonProtocol extends DefaultJsonProtocol {
@@ -27,9 +24,10 @@ object JbrowseUtil {
   val end = sqc.sql("SELECT MAX(`end`) FROM ADaM_Table").collect().apply(0).getLong(0)
   val start = sqc.sql("SELECT MIN(start) FROM ADaM_Table").collect().apply(0).getLong(0)
 
+
   def getTrackList = {
     TrackList(tracks = List(
-      Track(
+        Track(
         "mygene_track",
         "My ADAM Genes",
         "JBrowse/View/Track/HTMLFeatures",
@@ -120,3 +118,4 @@ case class Feature(
                     uniqueID: String,
                     qual: String
                     )
+
