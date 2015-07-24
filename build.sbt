@@ -10,7 +10,6 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 libraryDependencies ++= {
   val akkaV = "2.3.9"
   val sprayV = "1.3.3"
-  val spark = "1.2.0"
   Seq(
     "io.spray" %% "spray-can" % sprayV,
     "io.spray" %% "spray-routing" % sprayV,
@@ -21,7 +20,6 @@ libraryDependencies ++= {
     "io.spray" %% "spray-json" % "1.3.2",
     "org.bdgenomics.adam" % "adam-core" % "0.16.0",
     "org.apache.spark" %% "spark-sql" % "1.4.1"
-    //"org.scalatest" % "scalatest_2.10" % "2.2.4"
   )
 }
 
