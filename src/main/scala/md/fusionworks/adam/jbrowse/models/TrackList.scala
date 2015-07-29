@@ -2,10 +2,10 @@ package md.fusionworks.adam.jbrowse.models
 
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.functions._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
-import org.bdgenomics.adam.rdd.ADAMContext
 import org.bdgenomics.adam.rdd.ADAMContext._
 import org.bdgenomics.formats.avro.AlignmentRecord
 import parquet.org.codehaus.jackson.map.ObjectMapper
@@ -29,14 +29,10 @@ object JbrowseUtil {
   val conf = new SparkConf().setAppName("Simple Application").setMaster("local[2]")
   val sc = new SparkContext(conf)
   val sqc = new SQLContext(sc)
-  val ac = new ADAMContext(sc)
   val adamPath = ConfigFactory.load().getString("adam.path")
-  val readAC = ac.loadAlignments(adamPath)
   val df = sqc.read.parquet(adamPath)
-  val tableSQL = sqc.read.parquet(adamPath)
-  tableSQL.registerTempTable("ADaM_Table")
-  val end = sqc.sql("SELECT MAX(`end`) FROM ADaM_Table").collect().apply(0).getLong(0)
-  val start = sqc.sql("SELECT MIN(start) FROM ADaM_Table").collect().apply(0).getLong(0)
+  val end = df.select(df("start")).agg(max(df("start"))).collect().apply(0).getLong(0)
+  val start = df.select(df("start")).agg(min(df("start"))).collect().apply(0).getLong(0)
   val mapper = new ObjectMapper()
 
   def getTrackList = {
@@ -66,9 +62,8 @@ object JbrowseUtil {
   }
 
 
-  def getFeatures(getFactStat: Long, getFactEnd: Long) = {
-
-    val dataFrame=df.filter(df("start")>=getFactStat && df("start")!=null).filter(df("start")<=getFactEnd && df("start")!=null).orderBy("start")
+  def getFeatures(start: Long, end: Long) = {
+    val dataFrame=df.filter(df("start")>=start && df("start")!=null).filter(df("start")<=end && df("start")!=null).orderBy("start")
     val rddAR = dataFrame.toJSON.map(str => mapper.readValue(str,classOf[AlignmentRecord]))
 
     val sd = rddAR.adamGetSequenceDictionary
