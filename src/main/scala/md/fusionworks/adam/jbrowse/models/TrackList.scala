@@ -37,7 +37,7 @@ object JbrowseUtil {
       Track(
         "mygene_track",
         "My ADAM Genes",
-        "JBrowse/View/Track/HTMLFeatures",
+        "JBrowse/View/Track/Alignments2",
         "JBrowse/Store/SeqFeature/REST",
         "http://localhost:8080/data"
       ),
@@ -65,8 +65,11 @@ object JbrowseUtil {
   def getFeatures(start: Long, end: Long) = {
 
     val filteredDataFrame = dataFrame.filter(
-      dataFrame("start") >= start && dataFrame("start") != null &&
-        dataFrame("start") <= end && dataFrame("start") != null
+      (dataFrame("start") >= start && dataFrame("start") != null &&
+        dataFrame("start") <= end && dataFrame("start") != null) ||
+        (dataFrame("end") >= start && dataFrame("end") != null &&
+          dataFrame("end") <= end && dataFrame("end") != null)
+
     )
 
     val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[AlignmentRecord]))
@@ -97,7 +100,7 @@ object JbrowseUtil {
         mate_ref_index = samRecord.getMateReferenceIndex,
         as = samRecord.getAttributesBinarySize,
         strand = if (samRecord.getReadNegativeStrandFlag) 1 else -1)
-    }).collect().toList
+    }).collect().sortBy(_.start).toList
 
     Features(features = featureList)
 
