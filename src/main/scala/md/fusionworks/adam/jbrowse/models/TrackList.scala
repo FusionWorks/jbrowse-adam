@@ -52,7 +52,7 @@ object JbrowseUtil {
 
   def getRefSeqs:List[RefSeqs] = {
    val filteredDataFrame = dataFrame.filter(dataFrame("start") >= 0 && dataFrame("start") != null)
-    val colectDataFrame = filteredDataFrame.select("contig","start").groupBy("contig.contigName").agg(max("start"),min("start")).orderBy("contigName").collect().toList
+    val colectDataFrame = filteredDataFrame.select("contig","start", "end").groupBy("contig.contigName").agg(max("end"),min("start")).orderBy("contigName").collect().toList
 
 
    val data = colectDataFrame.map(x=>
