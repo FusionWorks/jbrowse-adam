@@ -22,6 +22,7 @@ object JsonProtocol extends DefaultJsonProtocol {
 }
 
 object JbrowseUtil {
+
   val conf = new SparkConf().setAppName("Simple Application").setMaster("local[2]")
   val sc = new SparkContext(conf)
   val sqlContext = new SQLContext(sc)
@@ -30,7 +31,6 @@ object JbrowseUtil {
 
   val dataFrame = sqlContext.read.parquet(adamPath)
   val mapper = new ObjectMapper()
-
 
   def getTrackList: TrackList = {
     TrackList(tracks = List(
@@ -50,37 +50,28 @@ object JbrowseUtil {
       )))
   }
 
-  def getRefSeqs:List[RefSeqs] = {
-   val filteredDataFrame = dataFrame.filter(dataFrame("start") >= 0 && dataFrame("start") != null)
-    val colectDataFrame = filteredDataFrame.select("contig","start", "end").groupBy("contig.contigName").agg(max("end"),min("start")).orderBy("contigName").collect().toList
-
-
-   val data = colectDataFrame.map(x=>
-        RefSeqs(
+  def getRefSeqs: List[RefSeqs] = {
+    val filteredDataFrame = dataFrame.filter(dataFrame("start") >= 0 && dataFrame("start") != null)
+    val colectDataFrame = filteredDataFrame.select("contig", "start", "end")
+      .groupBy("contig.contigName").agg(min("start"), max("end"))
+      .orderBy("contigName").collect().toList
+    colectDataFrame.map(x =>
+      RefSeqs(
         name = x.getString(0),
-        end = x.getLong(1),
-        start = x.getLong(2)
-        ))
-
-   data
-
+        start = x.getLong(1),
+        end = x.getLong(2)
+      ))
   }
 
-  def getGlobal: Global = {
-    Global(0.02, 234235, 87, 87, 42, 2.1)
-  }
-
+  def getGlobal: Global = Global(0.02, 234235, 87, 87, 42, 2.1)
 
   def getFeatures(start: Long, end: Long, contigName: String): Features = {
 
-    val filteredDataFrame = dataFrame.filter((
-      dataFrame("start") >= start && dataFrame("start") != null &&
-        dataFrame("start") <= end && dataFrame("start") != null ||
-        (dataFrame("end") >= start && dataFrame("end") != null &&
-          dataFrame("end") <= end && dataFrame("end") != null)) &&
-      dataFrame("contig.contigName") === contigName
-    )
-
+    val filteredDataFrame = dataFrame.filter(dataFrame("contig.contigName") === contigName)
+      .filter(
+        dataFrame("start") < end && dataFrame("start") != null &&
+          dataFrame("end") > start && dataFrame("end") != null
+      )
 
     val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[AlignmentRecord]))
 
@@ -113,14 +104,11 @@ object JbrowseUtil {
     }).collect().sortBy(_.start).toList
 
     Features(features = featureList)
-
   }
 
 }
 
-case class TrackList(
-                      tracks: List[Track]
-                      )
+case class TrackList(tracks: List[Track])
 
 case class Track(
                   label: String,
@@ -132,10 +120,9 @@ case class Track(
 
 case class RefSeqs(
                     name: String,
-                    end: Long,
-                    start: Long
+                    start: Long,
+                    end: Long
                     )
-
 
 case class Global(
                    featureDensity: Double,
@@ -146,11 +133,7 @@ case class Global(
                    scoreStdDev: Double
                    )
 
-
-case class Features(
-                     features: List[Feature]
-                     )
-
+case class Features(features: List[Feature])
 
 case class Feature(
                     name: String,
@@ -170,4 +153,3 @@ case class Feature(
                     as: Int,
                     strand: Int
                     )
-
