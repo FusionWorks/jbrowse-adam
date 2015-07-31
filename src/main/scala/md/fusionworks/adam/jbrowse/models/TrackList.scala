@@ -25,7 +25,7 @@ object JsonProtocol extends DefaultJsonProtocol {
 object JbrowseUtil {
 
   private var headerMap = Map[String, SAMFileHeader]()
-  val conf = new SparkConf().setAppName("Simple Application").setMaster("local[2]")
+  val conf = new SparkConf().setAppName("Simple Application").setMaster("local[*]")
   val sc = new SparkContext(conf)
   val sqlContext = new SQLContext(sc)
 
