@@ -12,14 +12,10 @@ import parquet.org.codehaus.jackson.map.ObjectMapper
 import spray.json.DefaultJsonProtocol
 
 
-
-
-
 object JsonProtocol extends DefaultJsonProtocol {
-  implicit val queryFormat = jsonFormat3(Query)
-  implicit val trackFormat = jsonFormat6(Track)
+  implicit val trackFormat = jsonFormat5(Track)
   implicit val trakListFormat = jsonFormat1(TrackList)
-  implicit val refSeqsFormat = jsonFormat6(RefSeqs)
+  implicit val refSeqsFormat = jsonFormat3(RefSeqs)
   implicit val globalFormat = jsonFormat6(Global)
   implicit val featureFormat = jsonFormat16(Feature)
   implicit val featuresFormat = jsonFormat1(Features)
@@ -28,57 +24,95 @@ object JsonProtocol extends DefaultJsonProtocol {
 object JbrowseUtil {
   val conf = new SparkConf().setAppName("Simple Application").setMaster("local[2]")
   val sc = new SparkContext(conf)
-  val sqc = new SQLContext(sc)
+  val sqlContext = new SQLContext(sc)
+
   val adamPath = ConfigFactory.load().getString("adam.path")
-  val df = sqc.read.parquet(adamPath)
-  val end = df.select(df("start")).agg(max(df("start"))).collect().apply(0).getLong(0)
-  val start = df.select(df("start")).agg(min(df("start"))).collect().apply(0).getLong(0)
+
+  val dataFrame = sqlContext.read.parquet(adamPath)
   val mapper = new ObjectMapper()
 
-  def getTrackList = {
+
+  def getTrackList: TrackList = {
     TrackList(tracks = List(
-        Track(
+      Track(
         "mygene_track",
         "My ADAM Genes",
-        "JBrowse/View/Track/HTMLFeatures",
+        "JBrowse/View/Track/Alignments2",
         "JBrowse/Store/SeqFeature/REST",
-        "http://localhost:8080/data",
-        List(Query("tyrannosaurus", Some("gene")))),
+        "http://localhost:8080/data"
+      ),
       Track(
         "my_sequence_track",
         "DNA",
         "JBrowse/View/Track/Sequence",
         "JBrowse/Store/SeqFeature/REST",
-        "http://localhost:8080/data",
-        List(Query("tyrannosaurus", sequence = Some(true))))))
+        "http://localhost:8080/data"
+      )))
   }
 
-  def getRefSeqs = {
-    List(RefSeqs(end, "ctgA", "seq/ctgA", 20000, end, start), RefSeqs(66, "ctgB", "seq/ctgB", 20000, 66, 0))
+  def getRefSeqs:List[RefSeqs] = {
+   val filteredDataFrame = dataFrame.filter(dataFrame("start") >= 0 && dataFrame("start") != null)
+    val colectDataFrame = filteredDataFrame.select("contig","start").groupBy("contig.contigName").agg(max("start"),min("start")).orderBy("contigName").collect().toList
+
+
+   val data = colectDataFrame.map(x=>
+        RefSeqs(
+        name = x.getString(0),
+        end = x.getLong(1),
+        start = x.getLong(2)
+        ))
+
+   data
+
   }
 
-  def getGlobal = {
+  def getGlobal: Global = {
     Global(0.02, 234235, 87, 87, 42, 2.1)
   }
 
 
-  def getFeatures(start: Long, end: Long) = {
-    val dataFrame=df.filter(df("start")>=start && df("start")!=null).filter(df("start")<=end && df("start")!=null).orderBy("start")
-    val rddAR = dataFrame.toJSON.map(str => mapper.readValue(str,classOf[AlignmentRecord]))
+  def getFeatures(start: Long, end: Long, contigName: String): Features = {
 
-    val sd = rddAR.adamGetSequenceDictionary
-    val rgd = rddAR.adamGetReadGroupDictionary
-    val adamRecordConverter = new AlignmentRecordConverter
-    val header = adamRecordConverter.createSAMHeader(sd, rgd)
-    val hdrBcast = rddAR.context.broadcast(SAMFileHeaderWritable(header))
+    val filteredDataFrame = dataFrame.filter((
+      dataFrame("start") >= start && dataFrame("start") != null &&
+        dataFrame("start") <= end && dataFrame("start") != null ||
+        (dataFrame("end") >= start && dataFrame("end") != null &&
+          dataFrame("end") <= end && dataFrame("end") != null)) &&
+      dataFrame("contig.contigName") === contigName
+    )
 
-    val dataFeature=rddAR.map(x=> {
-      val samRecord = adamRecordConverter.convert(x, hdrBcast.value)
-      Feature(x.getReadName,x.getSequence,x.getStart,x.getEnd,x.getCigar,x.getMapq,x.getMateAlignmentStart,x.getReadName+"_"+x.getStart,x.getQual.map(_-33).mkString(" "),samRecord.getFlags,samRecord.getInferredInsertSize,samRecord.getReferenceIndex,samRecord.getMateReferenceName,samRecord.getMateReferenceIndex,samRecord.getAttributesBinarySize,if(samRecord.getReadNegativeStrandFlag) 1 else -1)
-    }).collect().toList
 
-    Features(features = dataFeature)
+    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[AlignmentRecord]))
 
+    val sd = alignmentRecordsRDD.adamGetSequenceDictionary()
+    val rgd = alignmentRecordsRDD.adamGetReadGroupDictionary()
+
+    val converter = new AlignmentRecordConverter
+    val header = converter.createSAMHeader(sd, rgd)
+    val hdrBcast = alignmentRecordsRDD.context.broadcast(SAMFileHeaderWritable(header))
+
+    val featureList = alignmentRecordsRDD.map(x => {
+      val samRecord = converter.convert(x, hdrBcast.value)
+      Feature(
+        name = x.getReadName,
+        seq = x.getSequence,
+        start = x.getStart,
+        end = x.getEnd,
+        cigar = x.getCigar,
+        map_qual = x.getMapq,
+        mate_start = x.getMateAlignmentStart,
+        uniqueID = x.getReadName + "_" + x.getStart,
+        qual = x.getQual.map(_ - 33).mkString(" "),
+        flag = samRecord.getFlags,
+        insert_size = samRecord.getInferredInsertSize,
+        ref_index = samRecord.getReferenceIndex,
+        mate_ref = samRecord.getMateReferenceName,
+        mate_ref_index = samRecord.getMateReferenceIndex,
+        as = samRecord.getAttributesBinarySize,
+        strand = if (samRecord.getReadNegativeStrandFlag) 1 else -1)
+    }).collect().sortBy(_.start).toList
+
+    Features(features = featureList)
 
   }
 
@@ -93,22 +127,11 @@ case class Track(
                   key: String,
                   `type`: String,
                   storeClass: String,
-                  baseUrl: String,
-                  query: List[Query]
+                  baseUrl: String
                   )
-
-case class Query(
-                  organism: String,
-                  soType: Option[String] = None,
-                  sequence: Option[Boolean] = None
-                  )
-
 
 case class RefSeqs(
-                    length: Long,
                     name: String,
-                    seqDi: String,
-                    seqChunkSize: Int,
                     end: Long,
                     start: Long
                     )
