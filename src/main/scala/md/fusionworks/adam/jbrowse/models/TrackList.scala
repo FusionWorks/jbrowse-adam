@@ -1,6 +1,7 @@
 package md.fusionworks.adam.jbrowse.models
 
 import com.typesafe.config.ConfigFactory
+import htsjdk.samtools.SAMFileHeader
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.functions._
 import org.apache.spark.{SparkConf, SparkContext}
@@ -23,6 +24,7 @@ object JsonProtocol extends DefaultJsonProtocol {
 
 object JbrowseUtil {
 
+  private var headerMap = Map[String, SAMFileHeader]()
   val conf = new SparkConf().setAppName("Simple Application").setMaster("local[2]")
   val sc = new SparkContext(conf)
   val sqlContext = new SQLContext(sc)
@@ -74,12 +76,24 @@ object JbrowseUtil {
       )
 
     val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[AlignmentRecord]))
-
-    val sd = alignmentRecordsRDD.adamGetSequenceDictionary()
-    val rgd = alignmentRecordsRDD.adamGetReadGroupDictionary()
-
     val converter = new AlignmentRecordConverter
-    val header = converter.createSAMHeader(sd, rgd)
+
+
+    val header =  headerMap.get(contigName) match {
+      case Some(h) =>
+        println("-> Exist header")
+        h
+
+      case None =>
+        println("-> New header")
+        val sd = alignmentRecordsRDD.adamGetSequenceDictionary()
+        val rgd = alignmentRecordsRDD.adamGetReadGroupDictionary()
+
+       val h =  converter.createSAMHeader(sd, rgd)
+        headerMap += (contigName -> h)
+        headerMap(contigName)
+    }
+
     val hdrBcast = alignmentRecordsRDD.context.broadcast(SAMFileHeaderWritable(header))
 
     val featureList = alignmentRecordsRDD.map(x => {

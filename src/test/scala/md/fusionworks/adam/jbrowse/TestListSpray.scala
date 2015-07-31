@@ -5,8 +5,8 @@ package md.fusionworks.adam.jbrowse
  */
 
 
-import org.specs2.matcher.ShouldMatchers
 import md.fusionworks.adam.jbrowse.models._
+import org.specs2.matcher.ShouldMatchers
 import org.specs2.mutable._
 
 class TestListSpray extends Specification with ShouldMatchers{
@@ -51,8 +51,8 @@ class TestListSpray extends Specification with ShouldMatchers{
   "RefSeqs" should {
     "getRefSeqs" in {
       val get = JbrowseUtil.getRefSeqs
-      get must contain(RefSeqs(1523375, "ctgA", "seq/ctgA", 20000, 1523375, 1242))
-      get must contain(RefSeqs(66, "ctgB", "seq/ctgB", 20000, 66, 0))
+      get must contain(RefSeqs("ctgA",1523375,1242))
+      get must contain(RefSeqs("ctgB",66, 0))
       // println(get)
     }
   }
@@ -72,8 +72,7 @@ class TestListSpray extends Specification with ShouldMatchers{
         "DNA",
         "JBrowse/View/Track/Sequence",
         "JBrowse/Store/SeqFeature/REST",
-        "http://localhost:8080/data"
-     ))
+        "http://localhost:8080/data"))
 
       //println(get)
     }
