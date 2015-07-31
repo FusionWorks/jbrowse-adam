@@ -15,7 +15,7 @@ import spray.json.DefaultJsonProtocol
 object JsonProtocol extends DefaultJsonProtocol {
   implicit val trackFormat = jsonFormat5(Track)
   implicit val trakListFormat = jsonFormat1(TrackList)
-  implicit val refSeqsFormat = jsonFormat6(RefSeqs)
+  implicit val refSeqsFormat = jsonFormat3(RefSeqs)
   implicit val globalFormat = jsonFormat6(Global)
   implicit val featureFormat = jsonFormat16(Feature)
   implicit val featuresFormat = jsonFormat1(Features)
@@ -32,7 +32,7 @@ object JbrowseUtil {
   val mapper = new ObjectMapper()
 
 
-  def getTrackList = {
+  def getTrackList: TrackList = {
     TrackList(tracks = List(
       Track(
         "mygene_track",
@@ -50,27 +50,37 @@ object JbrowseUtil {
       )))
   }
 
-  def getRefSeqs = {
-    val end = dataFrame.select(dataFrame("start")).agg(max(dataFrame("start"))).first().getLong(0)
-    val start = dataFrame.select(dataFrame("start")).agg(min(dataFrame("start"))).first().getLong(0)
+  def getRefSeqs:List[RefSeqs] = {
+   val filteredDataFrame = dataFrame.filter(dataFrame("start") >= 0 && dataFrame("start") != null)
+    val colectDataFrame = filteredDataFrame.select("contig","start", "end").groupBy("contig.contigName").agg(max("end"),min("start")).orderBy("contigName").collect().toList
 
-    List(RefSeqs(end, "ctgA", "seq/ctgA", 20000, end, start), RefSeqs(66, "ctgB", "seq/ctgB", 20000, 66, 0))
+
+   val data = colectDataFrame.map(x=>
+        RefSeqs(
+        name = x.getString(0),
+        end = x.getLong(1),
+        start = x.getLong(2)
+        ))
+
+   data
+
   }
 
-  def getGlobal = {
+  def getGlobal: Global = {
     Global(0.02, 234235, 87, 87, 42, 2.1)
   }
 
 
-  def getFeatures(start: Long, end: Long) = {
+  def getFeatures(start: Long, end: Long, contigName: String): Features = {
 
-    val filteredDataFrame = dataFrame.filter(
-      (dataFrame("start") >= start && dataFrame("start") != null &&
-        dataFrame("start") <= end && dataFrame("start") != null) ||
+    val filteredDataFrame = dataFrame.filter((
+      dataFrame("start") >= start && dataFrame("start") != null &&
+        dataFrame("start") <= end && dataFrame("start") != null ||
         (dataFrame("end") >= start && dataFrame("end") != null &&
-          dataFrame("end") <= end && dataFrame("end") != null)
-
+          dataFrame("end") <= end && dataFrame("end") != null)) &&
+      dataFrame("contig.contigName") === contigName
     )
+
 
     val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[AlignmentRecord]))
 
@@ -121,10 +131,7 @@ case class Track(
                   )
 
 case class RefSeqs(
-                    length: Long,
                     name: String,
-                    seqDi: String,
-                    seqChunkSize: Int,
                     end: Long,
                     start: Long
                     )
