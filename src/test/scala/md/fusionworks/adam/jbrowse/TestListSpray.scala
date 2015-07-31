@@ -66,14 +66,14 @@ class TestListSpray extends Specification with ShouldMatchers{
         "My ADAM Genes",
         "JBrowse/View/Track/HTMLFeatures",
         "JBrowse/Store/SeqFeature/REST",
-        "http://localhost:8080/data",List(Query("tyrannosaurus", Some("gene")))))
+        "http://localhost:8080/data"))
      get.tracks must contain(Track(
         "my_sequence_track",
         "DNA",
         "JBrowse/View/Track/Sequence",
         "JBrowse/Store/SeqFeature/REST",
-        "http://localhost:8080/data",
-        List(Query("tyrannosaurus", sequence = Some(true)))))
+        "http://localhost:8080/data"
+     ))
 
       //println(get)
     }
