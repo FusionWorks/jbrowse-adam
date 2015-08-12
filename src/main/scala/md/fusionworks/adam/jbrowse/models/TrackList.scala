@@ -2,9 +2,8 @@ package md.fusionworks.adam.jbrowse.models
 
 import com.typesafe.config.ConfigFactory
 import htsjdk.samtools.SAMFileHeader
-import org.apache.spark.sql.SQLContext
+import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.apache.spark.sql.functions._
-import org.apache.spark.{SparkConf, SparkContext}
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
 import org.bdgenomics.adam.rdd.ADAMContext._
@@ -25,9 +24,8 @@ object JsonProtocol extends DefaultJsonProtocol {
 object JbrowseUtil {
 
   private var headerMap = Map[String, SAMFileHeader]()
-  val conf = new SparkConf().setAppName("Simple Application").setMaster("local[*]")
-  val sc = new SparkContext(conf)
-  val sqlContext = new SQLContext(sc)
+  val sc = SparkContextFactory.getSparkContext
+  val sqlContext = SparkContextFactory.getSparkSqlContext
 
   val adamPath = ConfigFactory.load().getString("adam.path")
 
