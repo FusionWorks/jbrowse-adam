@@ -18,7 +18,7 @@ object JsonProtocol extends DefaultJsonProtocol {
   implicit val trakListFormat = jsonFormat1(TrackList)
   implicit val refSeqsFormat = jsonFormat3(RefSeqs)
   implicit val globalFormat = jsonFormat6(Global)
-  implicit val featureFormat = jsonFormat16(Feature)
+  implicit val featureFormat = jsonFormat17(Feature)
   implicit val featuresFormat = jsonFormat1(Features)
 }
 
@@ -81,11 +81,9 @@ object JbrowseUtil {
 
     val header =  headerMap.get(contigName) match {
       case Some(h) =>
-        println("-> Exist header")
         h
 
       case None =>
-        println("-> New header")
         val sd = alignmentRecordsRDD.adamGetSequenceDictionary()
         val rgd = alignmentRecordsRDD.adamGetReadGroupDictionary()
 
@@ -96,7 +94,7 @@ object JbrowseUtil {
 
     val hdrBcast = alignmentRecordsRDD.context.broadcast(SAMFileHeaderWritable(header))
 
-    val featureList = alignmentRecordsRDD.map(x => {
+/*    val featureList = alignmentRecordsRDD.map(x => {
       val samRecord = converter.convert(x, hdrBcast.value)
       Feature(
         name = x.getReadName,
@@ -114,8 +112,36 @@ object JbrowseUtil {
         mate_ref = samRecord.getMateReferenceName,
         mate_ref_index = samRecord.getMateReferenceIndex,
         as = samRecord.getAttributesBinarySize,
-        strand = if (samRecord.getReadNegativeStrandFlag) 1 else -1)
+        strand = if (samRecord.getReadNegativeStrandFlag) 1 else -1,
+        rg = x.getRecordGroupName
+      )
     }).collect().sortBy(_.start).toList
+    */
+
+    val featureList = alignmentRecordsRDD.map(x => {
+      val samRecord = converter.convert(x, hdrBcast.value)
+      var maps = Map(
+      "name" -> x.getReadName,
+      "seq" -> x.getSequence,
+      "start" ->x.getStart.toString,
+      "end" -> x.getEnd.toString,
+      "cigar" -> x.getCigar,
+      "map_qual" -> x.getMapq.toString,
+      "mate_start" -> x.getMateAlignmentStart.toString,
+      "uniqueID" -> (x.getReadName + "_" + x.getStart),
+      "qual" -> (x.getQual.map(_ - 33).mkString(" ")).toString,
+      "flag" -> samRecord.getFlags.toString,
+      "insert_size" -> samRecord.getInferredInsertSize.toString,
+      "ref_index" -> samRecord.getReferenceIndex.toString,
+      "mate_ref_index" -> samRecord.getMateReferenceIndex.toString,
+      "as" -> samRecord.getAttributesBinarySize.toString,
+      "strand" -> (if (samRecord.getReadNegativeStrandFlag) 1 else -1).toString
+      )
+      if (!x.getRecordGroupName.isEmpty)
+        maps+=("rg" ->x.getRecordGroupName)
+      maps
+    }).collect().toList.sortBy(x => x("start"))
+
 
     Features(features = featureList)
   }
@@ -147,7 +173,7 @@ case class Global(
                    scoreStdDev: Double
                    )
 
-case class Features(features: List[Feature])
+case class Features(features: List[Map[String,String]])
 
 case class Feature(
                     name: String,
@@ -165,5 +191,6 @@ case class Feature(
                     mate_ref: String,
                     mate_ref_index: Int,
                     as: Int,
-                    strand: Int
+                    strand: Int,
+                    rg: String
                     )
