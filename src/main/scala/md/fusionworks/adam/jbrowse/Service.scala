@@ -48,8 +48,12 @@ trait Service extends HttpService {
         }
       } ~
       path("data" / "features" / Rest) { pathRest =>
-        parameters('start, 'end) { (start, end) =>
-          complete(JbrowseUtil.getFeatures(start.toLong, end.toLong, pathRest))
+        parameters('start, 'end,'reference_sequences_only.as[Boolean]?) {
+          (start, end, reference_sequences_only) =>
+            if(reference_sequences_only == Some(true))
+          complete(JbrowseUtil.getFlags(start.toLong, end.toLong, pathRest))
+            else
+              complete(JbrowseUtil.getFeatures(start.toLong, end.toLong, pathRest))
         }
       } ~
       path("") {

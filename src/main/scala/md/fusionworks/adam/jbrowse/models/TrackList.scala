@@ -7,7 +7,7 @@ import org.apache.spark.sql.functions._
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
 import org.bdgenomics.adam.rdd.ADAMContext._
-import org.bdgenomics.formats.avro.AlignmentRecord
+import org.bdgenomics.formats.avro.{AlignmentRecord, NucleotideContigFragment}
 import parquet.org.codehaus.jackson.map.ObjectMapper
 import spray.json.DefaultJsonProtocol
 
@@ -17,7 +17,6 @@ object JsonProtocol extends DefaultJsonProtocol {
   implicit val trakListFormat = jsonFormat1(TrackList)
   implicit val refSeqsFormat = jsonFormat3(RefSeqs)
   implicit val globalFormat = jsonFormat6(Global)
-  implicit val featureFormat = jsonFormat17(Feature)
   implicit val featuresFormat = jsonFormat1(Features)
 }
 
@@ -28,8 +27,9 @@ object JbrowseUtil {
   val sqlContext = SparkContextFactory.getSparkSqlContext
 
   val adamPath = ConfigFactory.load().getString("adam.path")
-
+  val fastaPath = ConfigFactory.load().getString("fasta.path")
   val dataFrame = sqlContext.read.parquet(adamPath)
+  val fastaDataFrame = sqlContext.read.parquet(fastaPath)
   val mapper = new ObjectMapper()
 
   def getTrackList: TrackList = {
@@ -66,7 +66,7 @@ object JbrowseUtil {
   def getGlobal: Global = Global(0.02, 234235, 87, 87, 42, 2.1)
 
   def getFeatures(start: Long, end: Long, contigName: String): Features = {
-
+    println("\n\n\n\n\nFeatures\n\n\n\n\n")
     val filteredDataFrame = dataFrame.filter(dataFrame("contig.contigName") === contigName)
       .filter(
         dataFrame("start") < end && dataFrame("start") != null &&
@@ -85,63 +85,62 @@ object JbrowseUtil {
         val sd = alignmentRecordsRDD.adamGetSequenceDictionary()
         val rgd = alignmentRecordsRDD.adamGetReadGroupDictionary()
 
-       val h =  converter.createSAMHeader(sd, rgd)
+        val h =  converter.createSAMHeader(sd, rgd)
         headerMap += (contigName -> h)
         headerMap(contigName)
     }
 
     val hdrBcast = alignmentRecordsRDD.context.broadcast(SAMFileHeaderWritable(header))
 
-/*    val featureList = alignmentRecordsRDD.map(x => {
-      val samRecord = converter.convert(x, hdrBcast.value)
-      Feature(
-        name = x.getReadName,
-        seq = x.getSequence,
-        start = x.getStart,
-        end = x.getEnd,
-        cigar = x.getCigar,
-        map_qual = x.getMapq,
-        mate_start = x.getMateAlignmentStart,
-        uniqueID = x.getReadName + "_" + x.getStart,
-        qual = x.getQual.map(_ - 33).mkString(" "),
-        flag = samRecord.getFlags,
-        insert_size = samRecord.getInferredInsertSize,
-        ref_index = samRecord.getReferenceIndex,
-        mate_ref = samRecord.getMateReferenceName,
-        mate_ref_index = samRecord.getMateReferenceIndex,
-        as = samRecord.getAttributesBinarySize,
-        strand = if (samRecord.getReadNegativeStrandFlag) 1 else -1,
-        rg = x.getRecordGroupName
-      )
-    }).collect().sortBy(_.start).toList
-    */
-
-    val featureList = alignmentRecordsRDD.map(x => {
+    val featuresMap = alignmentRecordsRDD.map(x => {
       val samRecord = converter.convert(x, hdrBcast.value)
       var maps = Map(
-      "name" -> x.getReadName,
-      "seq" -> x.getSequence,
-      "start" ->x.getStart.toString,
-      "end" -> x.getEnd.toString,
-      "cigar" -> x.getCigar,
-      "map_qual" -> x.getMapq.toString,
-      "mate_start" -> x.getMateAlignmentStart.toString,
-      "uniqueID" -> (x.getReadName + "_" + x.getStart),
-      "qual" -> (x.getQual.map(_ - 33).mkString(" ")).toString,
-      "flag" -> samRecord.getFlags.toString,
-      "insert_size" -> samRecord.getInferredInsertSize.toString,
-      "ref_index" -> samRecord.getReferenceIndex.toString,
-      "mate_ref_index" -> samRecord.getMateReferenceIndex.toString,
-      "as" -> samRecord.getAttributesBinarySize.toString,
-      "strand" -> (if (samRecord.getReadNegativeStrandFlag) 1 else -1).toString
+        "name" -> x.getReadName,
+        "seq" -> x.getSequence,
+        "start" ->x.getStart.toString,
+        "end" -> x.getEnd.toString,
+        "cigar" -> x.getCigar,
+        "map_qual" -> x.getMapq.toString,
+        "mate_start" -> x.getMateAlignmentStart.toString,
+        "uniqueID" -> (x.getReadName + "_" + x.getStart),
+        "qual" -> (x.getQual.map(_ - 33).mkString(" ")).toString,
+        "flag" -> samRecord.getFlags.toString,
+        "insert_size" -> samRecord.getInferredInsertSize.toString,
+        "ref_index" -> samRecord.getReferenceIndex.toString,
+        "mate_ref_index" -> samRecord.getMateReferenceIndex.toString,
+        "as" -> samRecord.getAttributesBinarySize.toString,
+        "strand" -> (if (samRecord.getReadNegativeStrandFlag) 1 else -1).toString
       )
       if (!x.getRecordGroupName.isEmpty)
         maps+=("rg" ->x.getRecordGroupName)
       maps
     }).collect().toList.sortBy(x => x("start"))
 
+    Features(features = featuresMap)
+  }
 
-    Features(features = featureList)
+
+  def getFlags(start: Long, end: Long, contigName: String): Features = {
+println("\n\n\n\n\nFlags\n\n\n\n\n")
+    val filteredDataFrame = fastaDataFrame.filter(fastaDataFrame("contig.contigName") === contigName)
+      .filter(
+        fastaDataFrame("fragmentStartPosition") < end && fastaDataFrame("fragmentStartPosition") != null &&
+          fastaDataFrame("fragmentStartPosition") > start && fastaDataFrame("fragmentStartPosition") != null
+      )
+
+    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[NucleotideContigFragment]))
+
+
+    val featuresMap = alignmentRecordsRDD.map(x => {
+      Map(
+      "description" ->x.getDescription,
+      "fragmentSequence" -> x.getFragmentSequence,
+      "fragmentNumber" -> x.getFragmentNumber.toString,
+      "fragmentStartPosition" -> x.getFragmentStartPosition.toString,
+      "numberOfFragmentsInContig" -> x.getNumberOfFragmentsInContig.toString
+      )
+    }).collect().toList.sortBy(x => x("fragmentStartPosition"))
+    Features(features = featuresMap)
   }
 
 }
@@ -172,23 +171,3 @@ case class Global(
                    )
 
 case class Features(features: List[Map[String,String]])
-
-case class Feature(
-                    name: String,
-                    seq: String,
-                    start: Long,
-                    end: Long,
-                    cigar: String,
-                    map_qual: Int,
-                    mate_start: Long,
-                    uniqueID: String,
-                    qual: String,
-                    flag: Int,
-                    insert_size: Long,
-                    ref_index: Int,
-                    mate_ref: String,
-                    mate_ref_index: Int,
-                    as: Int,
-                    strand: Int,
-                    rg: String
-                    )
