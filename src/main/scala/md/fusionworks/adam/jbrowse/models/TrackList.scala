@@ -67,7 +67,7 @@ object JbrowseUtil {
   def getGlobal: Global = Global(0.02, 234235, 87, 87, 42, 2.1)
 
   def getFeatures(start: Long, end: Long, contigName: String): Features = {
-    println("\n\n\n\n\nFeatures\n\n\n\n\n")
+
     val filteredDataFrame = dataFrame.filter(dataFrame("contig.contigName") === contigName)
       .filter(
         dataFrame("start") < end && dataFrame("start") != null &&
@@ -122,7 +122,6 @@ object JbrowseUtil {
 
 
   def getFlags(start: Long, end: Long, contigName: String): Features = {
-println("\n\n\n\n\nFlags\n\n\n\n\n")
 
     val position = fastaDataFrame.first()
 
