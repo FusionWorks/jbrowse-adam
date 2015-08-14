@@ -3,6 +3,7 @@ package md.fusionworks.adam.jbrowse.models
 import com.typesafe.config.ConfigFactory
 import htsjdk.samtools.SAMFileHeader
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
@@ -51,9 +52,9 @@ object JbrowseUtil {
   }
 
   def getRefSeqs: List[RefSeqs] = {
-    val filteredDataFrame = dataFrame.filter(dataFrame("start") >= 0 && dataFrame("start") != null)
-    val colectDataFrame = filteredDataFrame.select("contig", "start", "end")
-      .groupBy("contig.contigName").agg(min("start"), max("end"))
+    val filteredDataFrame = fastaDataFrame.filter(fastaDataFrame("fragmentStartPosition") >= 0 && fastaDataFrame("fragmentStartPosition") != null)
+    val colectDataFrame = filteredDataFrame.select("contig", "fragmentStartPosition")
+      .groupBy("contig.contigName").agg(min("fragmentStartPosition"), max("fragmentStartPosition"))
       .orderBy("contigName").collect().toList
     colectDataFrame.map(x =>
       RefSeqs(
@@ -122,24 +123,27 @@ object JbrowseUtil {
 
   def getFlags(start: Long, end: Long, contigName: String): Features = {
 println("\n\n\n\n\nFlags\n\n\n\n\n")
+
+    val position = fastaDataFrame.first()
+
     val filteredDataFrame = fastaDataFrame.filter(fastaDataFrame("contig.contigName") === contigName)
       .filter(
         fastaDataFrame("fragmentStartPosition") < end && fastaDataFrame("fragmentStartPosition") != null &&
-          fastaDataFrame("fragmentStartPosition") > start && fastaDataFrame("fragmentStartPosition") != null
+          fastaDataFrame("fragmentStartPosition")+position.getAs[Row]("contig").getAs[Long]("contigLength") / position.getAs[Integer]("numberOfFragmentsInContig")
+            > start && fastaDataFrame("fragmentStartPosition") != null
       )
 
     val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[NucleotideContigFragment]))
 
-
     val featuresMap = alignmentRecordsRDD.map(x => {
       Map(
-      "description" ->x.getDescription,
-      "fragmentSequence" -> x.getFragmentSequence,
-      "fragmentNumber" -> x.getFragmentNumber.toString,
-      "fragmentStartPosition" -> x.getFragmentStartPosition.toString,
-      "numberOfFragmentsInContig" -> x.getNumberOfFragmentsInContig.toString
+      //"description" ->x.getDescription,
+      "seq" -> x.getFragmentSequence,
+      "flag" -> x.getFragmentNumber.toString,
+      "start" -> x.getFragmentStartPosition.toString,
+      "seq_id" -> x.getContig.getContigName
       )
-    }).collect().toList.sortBy(x => x("fragmentStartPosition"))
+    }).collect().toList.sortBy(x => x("start"))
     Features(features = featuresMap)
   }
 
