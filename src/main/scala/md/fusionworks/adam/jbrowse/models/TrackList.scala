@@ -1,6 +1,5 @@
 package md.fusionworks.adam.jbrowse.models
 
-import com.typesafe.config.ConfigFactory
 import htsjdk.samtools.SAMFileHeader
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.apache.spark.sql.Row
@@ -10,8 +9,7 @@ import org.bdgenomics.adam.models.SAMFileHeaderWritable
 import org.bdgenomics.adam.rdd.ADAMContext._
 import org.bdgenomics.formats.avro.{AlignmentRecord, NucleotideContigFragment}
 import parquet.org.codehaus.jackson.map.ObjectMapper
-import spray.json.DefaultJsonProtocol
-
+import spray.json.{DefaultJsonProtocol, _}
 
 object JsonProtocol extends DefaultJsonProtocol {
   implicit val trackFormat = jsonFormat5(Track)
@@ -22,33 +20,22 @@ object JsonProtocol extends DefaultJsonProtocol {
 }
 
 object JbrowseUtil {
-
+import JsonProtocol._
   private var headerMap = Map[String, SAMFileHeader]()
   val sc = SparkContextFactory.getSparkContext
   val sqlContext = SparkContextFactory.getSparkSqlContext
 
-  val adamPath = ConfigFactory.load().getString("adam.path")
-  val fastaPath = ConfigFactory.load().getString("fasta.path")
-  val dataFrame = sqlContext.read.parquet(adamPath)
-  val fastaDataFrame = sqlContext.read.parquet(fastaPath)
+  val input = scala.io.Source.fromFile("trackList.json")("UTF-8").mkString.parseJson
+  val trak = input.convertTo[TrackList]
+  val sources = trak.tracks.map(_.baseUrl)
+  
+  val dataFrame = sqlContext.read.parquet(sources(0).toString)
+  val fastaDataFrame = sqlContext.read.parquet(sources(1).toString)
   val mapper = new ObjectMapper()
 
-  def getTrackList: TrackList = {
-    TrackList(tracks = List(
-      Track(
-        "mygene_track",
-        "My ADAM Genes",
-        "JBrowse/View/Track/Alignments2",
-        "JBrowse/Store/SeqFeature/REST",
-        "http://localhost:8080/data"
-      ),
-      Track(
-        "my_sequence_track",
-        "DNA",
-        "JBrowse/View/Track/Sequence",
-        "JBrowse/Store/SeqFeature/REST",
-        "http://localhost:8080/data"
-      )))
+
+  def getTrackList: List[Track] = {
+    trak.tracks.map(_.copy(baseUrl = "http://localhost:8080/data"))
   }
 
   def getRefSeqs: List[RefSeqs] = {
