@@ -20,7 +20,7 @@ object JsonProtocol extends DefaultJsonProtocol {
 }
 
 object JbrowseUtil {
-import JsonProtocol._
+  import JsonProtocol._
   private var headerMap = Map[String, SAMFileHeader]()
   val sc = SparkContextFactory.getSparkContext
   val sqlContext = SparkContextFactory.getSparkSqlContext
@@ -34,8 +34,10 @@ import JsonProtocol._
   val mapper = new ObjectMapper()
 
 
-  def getTrackList: List[Track] = {
-    trak.tracks.map(_.copy(baseUrl = "http://localhost:8080/data"))
+  def getTrackList: TrackList = {
+    val trakBaseUrl = trak.tracks.map(_.copy(baseUrl = "http://localhost:8080/data"))
+    val listTracksBaseUrl = TrackList(tracks = trakBaseUrl)
+    listTracksBaseUrl
   }
 
   def getRefSeqs: List[RefSeqs] = {
