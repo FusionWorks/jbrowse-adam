@@ -1,0 +1,12 @@
+[
+  {
+    "filePath": "/home/user/dedupped_20.bam.adam",
+    "fileType": "Alignment",
+    "trackType": "JBrowse/View/Track/Alignments2"
+  },
+  {
+    "filePath": "/home/user/fasta.adam",
+    "fileType": "Reference",
+    "trackType": "JBrowse/View/Track/Sequence"
+  }
+]

@@ -32,7 +32,7 @@ class TestListSpray extends Specification with ShouldMatchers{
 
     "Global" should {
       "getGlobal" in {
-        val get = JbrowseUtil.getGlobal
+        val get = JBrowseUtil.getGlobal
         //get must contain(Global(0.02,234235,87,87,42,2.1))
        // get must assert(Global(0.02,234235,87,87,42,2.1))
        // get must Global(0.02,234235,87,87,42,2.1)
@@ -50,7 +50,7 @@ class TestListSpray extends Specification with ShouldMatchers{
 
   "RefSeqs" should {
     "getRefSeqs" in {
-      val get = JbrowseUtil.getRefSeqs
+      val get = JBrowseUtil.getRefSeqs
       get must contain(RefSeqs("ctgA",1523375,1242))
       get must contain(RefSeqs("ctgB",66, 0))
       // println(get)
@@ -60,7 +60,7 @@ class TestListSpray extends Specification with ShouldMatchers{
 
   "TrakList" should {
     "getTrackList:" in {
-      val get = JbrowseUtil.getTrackList
+      val get = JBrowseUtil.getTrackList
      get.tracks must contain(Track(
         "mygene_track",
         "My ADAM Genes",
