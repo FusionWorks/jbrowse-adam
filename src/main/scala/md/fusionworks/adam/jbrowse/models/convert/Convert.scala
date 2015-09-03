@@ -3,6 +3,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.bdgenomics.adam.rdd.{ADAMContext, ADAMRDDFunctions}
 
 class Convert {
+
   def fasta(link: String){
     println("link to out file: ")
     var out = readLine()
