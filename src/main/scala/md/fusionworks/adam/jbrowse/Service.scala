@@ -20,9 +20,7 @@ class ServiceActor extends Actor with Service {
   def receive = runRoute(route)
 }
 
-
 // this trait defines our service behavior independently from the service actor
-
 trait Service extends HttpService {
 
   val route = {
@@ -51,7 +49,7 @@ trait Service extends HttpService {
         parameters('start, 'end,'reference_sequences_only.as[Boolean]?) {
           (start, end, reference_sequences_only) =>
             if(reference_sequences_only == Some(true))
-          complete(JBrowseUtil.getReferenceFeatures(start.toLong, end.toLong, pathRest))
+              complete(JBrowseUtil.getReferenceFeatures(start.toLong, end.toLong, pathRest))
             else
               complete(JBrowseUtil.getAlignmentFeatures(start.toLong, end.toLong, pathRest))
         }
@@ -62,5 +60,4 @@ trait Service extends HttpService {
       getFromResourceDirectory("jbrowse/")
     }
   }
-
 }

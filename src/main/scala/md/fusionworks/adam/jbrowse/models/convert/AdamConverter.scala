@@ -3,7 +3,7 @@ package md.fusionworks.adam.jbrowse.models.convert
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.bdgenomics.adam.rdd.{ADAMContext, ADAMRDDFunctions}
 
-object AdamConvertor {
+object AdamConverter {
 
   def fastaToADAM(inputPath :String, outputPath :String){
     val sc = SparkContextFactory.getSparkContext
