@@ -35,13 +35,11 @@ object FileType extends Enumeration {
   val Alignment, Reference, Variants = Value
 }
 
-import FileType._
+import md.fusionworks.adam.jbrowse.models.FileType._
 
 case class TrackConfig(filePath: String, fileType: TrackType, trackType: String)
 
 object JBrowseUtil {
-
-  import JsonProtocol._
 
   private var headerMap = Map[String, SAMFileHeader]()
   val sc = SparkContextFactory.getSparkContext
@@ -53,15 +51,13 @@ object JBrowseUtil {
   val alignmentDF = sqlContext.read.parquet(paths(0).toString)
   val referenceDF = sqlContext.read.parquet(paths(1).toString)
 
-  val mapper = new ObjectMapper()
-
   def getTrackList: TrackList = {
     val tracks = tracksConfig.map(trackConfig => {
       val fileName = trackConfig.filePath.substring(trackConfig.filePath.lastIndexOf("/") + 1)
       Track(
         `type` = trackConfig.trackType,
         storeClass = "JBrowse/Store/SeqFeature/REST",
-        baseUrl = s"http://localhost:8080/data",
+        baseUrl = s"http://ec2-54-67-97-132.us-west-1.compute.amazonaws.com:8080/data",
         label = s"${fileName}_${trackConfig.fileType.toString}",
         key = s"$fileName ${trackConfig.fileType.toString}"
       )
@@ -92,7 +88,7 @@ object JBrowseUtil {
           alignmentDF("end") > start && alignmentDF("end") != null
       )
 
-    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[AlignmentRecord]))
+    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[AlignmentRecord]))
     val converter = new AlignmentRecordConverter
 
 
@@ -148,7 +144,7 @@ object JBrowseUtil {
             > start && referenceDF("fragmentStartPosition") != null
       )
 
-    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => mapper.readValue(str, classOf[NucleotideContigFragment]))
+    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[NucleotideContigFragment]))
 
     val featuresMap = alignmentRecordsRDD.map(x => {
       Map(
@@ -172,13 +168,13 @@ case class Track(
                   `type`: String,
                   storeClass: String,
                   baseUrl: String
-                  )
+                )
 
 case class RefSeqs(
                     name: String,
                     start: Long,
                     end: Long
-                    )
+                  )
 
 case class Global(
                    featureDensity: Double,
@@ -187,6 +183,6 @@ case class Global(
                    scoreMax: Int,
                    scoreMean: Int,
                    scoreStdDev: Double
-                   )
+                 )
 
 case class Features(features: List[Map[String, String]])
