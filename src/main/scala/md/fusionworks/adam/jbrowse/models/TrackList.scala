@@ -40,6 +40,8 @@ import md.fusionworks.adam.jbrowse.models.FileType._
 case class TrackConfig(filePath: String, fileType: TrackType, trackType: String)
 
 object JBrowseUtil {
+  import JsonProtocol._
+  trackFormat
 
   private var headerMap = Map[String, SAMFileHeader]()
   val sc = SparkContextFactory.getSparkContext

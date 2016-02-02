@@ -21,7 +21,7 @@ lazy val sprayDependencies = {
     "io.spray" %% "spray-can" % sprayV,
     "io.spray" %% "spray-routing" % sprayV,
     "io.spray" %% "spray-testkit" % sprayV % "test",
-    "io.spray" %% "spray-json" % sprayV,
+    "io.spray" %% "spray-json" % "1.3.2",
     "org.specs2" %% "specs2-core" % "2.3.11" % "test"
   )
 }
@@ -52,5 +52,9 @@ assemblyMergeStrategy in assembly := {
   case PathList(ps@_*) if ps.last endsWith "reference.conf" => MergeStrategy.concat
   case _ => MergeStrategy.first
 }
+
+run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
+import spray.revolver.SbtCompatImpl.reStart
+fullClasspath in reStart <<= fullClasspath in Compile
 
 test in assembly := {}
