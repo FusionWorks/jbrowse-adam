@@ -48,7 +48,7 @@ object JBrowseUtil {
   val tracksConfig = scala.io.Source.fromFile("tracksConfig.json").mkString.parseJson.convertTo[List[TrackConfig]]
   val paths = tracksConfig.map(_.filePath)
 
-  val alignmentDF = sqlContext.read.parquet(paths(0).toString)
+  val alignmentDF = sqlContext.read.parquet(paths.head.toString)
   val referenceDF = sqlContext.read.parquet(paths(1).toString)
 
   def getTrackList: TrackList = {
@@ -168,13 +168,13 @@ case class Track(
                   `type`: String,
                   storeClass: String,
                   baseUrl: String
-                )
+                  )
 
 case class RefSeqs(
                     name: String,
                     start: Long,
                     end: Long
-                  )
+                    )
 
 case class Global(
                    featureDensity: Double,
@@ -183,6 +183,6 @@ case class Global(
                    scoreMax: Int,
                    scoreMean: Int,
                    scoreStdDev: Double
-                 )
+                   )
 
 case class Features(features: List[Map[String, String]])
