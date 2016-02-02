@@ -16,14 +16,12 @@ object Boot extends App {
   implicit val system = ActorSystem("on-spray-can")
 
   // create and start our service actor
-  val service = system.actorOf(Props[ServiceActor], "demo-service")
+  val service = system.actorOf(Props[ServiceActor], "jbrowse-service")
 
   implicit val timeout = Timeout(5.seconds)
   // start a new HTTP server on port 8080 with our service actor as the handler
   IO(Http) ? Http.Bind(service, interface = "0.0.0.0", port = 8080)
 
-  println("staring Spark...")
+  println("Starting Spark...")
   SparkContextFactory.getSparkContext
-
-
 }
