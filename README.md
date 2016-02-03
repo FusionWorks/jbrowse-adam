@@ -3,7 +3,7 @@ This project implements sample integration between JBrowse and Adam file format
 
 ###to run ``jbrowse-adam`` in "local-mode":
 
-`sbt run local[*]` or in sbt-console type `re-start local[*]`
+`sbt run local` or in sbt-console type `re-start local`
 
 ###to run ``jbrowse-adam`` in "cluster-mode":
 

@@ -1,16 +1,17 @@
 package md.fusionworks.adam.jbrowse.spark
 
-import com.typesafe.config.ConfigFactory
+import md.fusionworks.adam.jbrowse.ConfigLoader.{conf, path}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
-/**
-  * Created by gganebnyi on 2/24/15.
-  */
-object SparkContextFactory {
 
-  val conf = ConfigFactory.load()
-  var masterUrl: Option[String] = None
+object SparkContextFactory {
+  final val configPath = s"spark.$path"
+
+  final val masterUrl: Option[String] =
+    if (conf.hasPath(configPath)) {
+      Some(conf.getConfig(configPath).getString("master.url"))
+    } else None
 
   private var sparkContext: Option[SparkContext] = None
   private lazy val sparkSqlContext = new SQLContext(getSparkContext)
@@ -32,7 +33,7 @@ object SparkContextFactory {
   }
 
   def startSparkContext(): Unit = {
-    println("staring SparkContext...")
+    println("Starting SparkContext...")
     getSparkContext
   }
 
