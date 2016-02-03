@@ -1,15 +1,31 @@
 package md.fusionworks.adam.jbrowse.models
 
 import htsjdk.samtools.SAMFileHeader
+import md.fusionworks.adam.jbrowse.ConfigLoader
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
+import org.apache.spark.storage.StorageLevel
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
 import org.bdgenomics.adam.rdd.ADAMContext._
 import org.bdgenomics.formats.avro.{AlignmentRecord, NucleotideContigFragment}
 import parquet.org.codehaus.jackson.map.ObjectMapper
 import spray.json.{DefaultJsonProtocol, _}
+
+object TracksConfigLoader {
+  val jBrowseConf = ConfigLoader.conf.getConfig("jbrowse")
+
+  val urlSettingsConf = jBrowseConf.getConfig(ConfigLoader.path)
+
+  val baseUrl = urlSettingsConf.getString("track.base.url")
+
+  val tracksConfig = jBrowseConf.getList("tracks").map { cv =>
+    val config = cv.unwrapped().asInstanceOf[java.util.HashMap[String, String]]
+    val filePath = urlSettingsConf.getString("url.prefix") + config.get("filePath")
+    TrackConfig(filePath, FileType.withName(config.get("fileType")), config.get("trackType"))
+  }
+}
 
 object JsonProtocol extends DefaultJsonProtocol {
 
@@ -40,17 +56,15 @@ import md.fusionworks.adam.jbrowse.models.FileType._
 case class TrackConfig(filePath: String, fileType: TrackType, trackType: String)
 
 object JBrowseUtil {
-  import JsonProtocol._
-  trackFormat
 
   private var headerMap = Map[String, SAMFileHeader]()
   val sc = SparkContextFactory.getSparkContext
   val sqlContext = SparkContextFactory.getSparkSqlContext
 
-  val tracksConfig = scala.io.Source.fromFile("tracksConfig.json").mkString.parseJson.convertTo[List[TrackConfig]]
+  val tracksConfig = TracksConfigLoader.tracksConfig
   val paths = tracksConfig.map(_.filePath)
 
-  val alignmentDF = sqlContext.read.parquet(paths(0).toString)
+  val alignmentDF = sqlContext.read.parquet(paths.head.toString)
   val referenceDF = sqlContext.read.parquet(paths(1).toString)
 
   def getTrackList: TrackList = {
@@ -59,7 +73,7 @@ object JBrowseUtil {
       Track(
         `type` = trackConfig.trackType,
         storeClass = "JBrowse/Store/SeqFeature/REST",
-        baseUrl = s"http://ec2-54-67-97-132.us-west-1.compute.amazonaws.com:8080/data",
+        baseUrl = TracksConfigLoader.baseUrl,
         label = s"${fileName}_${trackConfig.fileType.toString}",
         key = s"$fileName ${trackConfig.fileType.toString}"
       )
@@ -90,7 +104,9 @@ object JBrowseUtil {
           alignmentDF("end") > start && alignmentDF("end") != null
       )
 
-    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[AlignmentRecord]))
+    val alignmentRecordsRDD =
+      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[AlignmentRecord])).
+        persist(StorageLevel.MEMORY_AND_DISK)
     val converter = new AlignmentRecordConverter
 
 
@@ -146,7 +162,9 @@ object JBrowseUtil {
             > start && referenceDF("fragmentStartPosition") != null
       )
 
-    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[NucleotideContigFragment]))
+    val alignmentRecordsRDD =
+      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[NucleotideContigFragment])).
+        persist(StorageLevel.MEMORY_AND_DISK)
 
     val featuresMap = alignmentRecordsRDD.map(x => {
       Map(
@@ -170,13 +188,13 @@ case class Track(
                   `type`: String,
                   storeClass: String,
                   baseUrl: String
-                )
+                  )
 
 case class RefSeqs(
                     name: String,
                     start: Long,
                     end: Long
-                  )
+                    )
 
 case class Global(
                    featureDensity: Double,
@@ -185,6 +203,6 @@ case class Global(
                    scoreMax: Int,
                    scoreMean: Int,
                    scoreStdDev: Double
-                 )
+                   )
 
 case class Features(features: List[Map[String, String]])
