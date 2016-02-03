@@ -5,6 +5,7 @@ import md.fusionworks.adam.jbrowse.ConfigLoader
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
+import org.apache.spark.storage.StorageLevel
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
 import org.bdgenomics.adam.rdd.ADAMContext._
@@ -103,7 +104,9 @@ object JBrowseUtil {
           alignmentDF("end") > start && alignmentDF("end") != null
       )
 
-    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[AlignmentRecord])).cache()
+    val alignmentRecordsRDD =
+      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[AlignmentRecord])).
+        persist(StorageLevel.MEMORY_AND_DISK)
     val converter = new AlignmentRecordConverter
 
 
@@ -159,7 +162,9 @@ object JBrowseUtil {
             > start && referenceDF("fragmentStartPosition") != null
       )
 
-    val alignmentRecordsRDD = filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[NucleotideContigFragment])).cache()
+    val alignmentRecordsRDD =
+      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[NucleotideContigFragment])).
+        persist(StorageLevel.MEMORY_AND_DISK)
 
     val featuresMap = alignmentRecordsRDD.map(x => {
       Map(
