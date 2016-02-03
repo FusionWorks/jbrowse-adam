@@ -7,7 +7,5 @@ object ConfigLoader {
 
   var path = conf.getString("config.path")
 
-  def setPath(argPath: String) = {
-    path = argPath
-  }
+  def setPath(argPath: String) = path = argPath
 }
