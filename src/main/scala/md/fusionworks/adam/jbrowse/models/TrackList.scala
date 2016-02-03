@@ -13,13 +13,13 @@ import parquet.org.codehaus.jackson.map.ObjectMapper
 import spray.json.{DefaultJsonProtocol, _}
 
 object TracksConfigLoader {
-  final val jBrowseConf = ConfigLoader.conf.getConfig("jbrowse")
+  val jBrowseConf = ConfigLoader.conf.getConfig("jbrowse")
 
-  final val urlSettingsConf = jBrowseConf.getConfig(ConfigLoader.path)
+  val urlSettingsConf = jBrowseConf.getConfig(ConfigLoader.path)
 
-  final val baseUrl = urlSettingsConf.getString("track.base.url")
+  val baseUrl = urlSettingsConf.getString("track.base.url")
 
-  final val tracksConfig = jBrowseConf.getList("tracks").map { cv =>
+  val tracksConfig = jBrowseConf.getList("tracks").map { cv =>
     val config = cv.unwrapped().asInstanceOf[java.util.HashMap[String, String]]
     val filePath = urlSettingsConf.getString("url.prefix") + config.get("filePath")
     TrackConfig(filePath, FileType.withName(config.get("fileType")), config.get("trackType"))
@@ -60,7 +60,7 @@ object JBrowseUtil {
   val sc = SparkContextFactory.getSparkContext
   val sqlContext = SparkContextFactory.getSparkSqlContext
 
-  val tracksConfig = scala.io.Source.fromFile("tracksConfig.json").mkString.parseJson.convertTo[List[TrackConfig]]
+  val tracksConfig = TracksConfigLoader.tracksConfig
   val paths = tracksConfig.map(_.filePath)
 
   val alignmentDF = sqlContext.read.parquet(paths.head.toString)

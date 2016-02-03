@@ -3,7 +3,7 @@ package md.fusionworks.adam.jbrowse
 import com.typesafe.config.ConfigFactory
 
 object ConfigLoader {
-  final val conf = ConfigFactory.load()
+  val conf = ConfigFactory.load()
 
   var path = conf.getString("config.path")
 
