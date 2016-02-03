@@ -6,9 +6,9 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 
 object SparkContextFactory {
-  final val configPath = s"spark.$path"
+  val configPath = s"spark.$path"
 
-  final val masterUrl: Option[String] =
+  val masterUrl: Option[String] =
     if (conf.hasPath(configPath)) {
       Some(conf.getConfig(configPath).getString("master.url"))
     } else None
@@ -40,5 +40,4 @@ object SparkContextFactory {
   def getSparkSqlContext = sparkSqlContext
 
   def stopSparkContext() = getSparkContext.stop()
-
 }
