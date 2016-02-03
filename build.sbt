@@ -53,4 +53,8 @@ assemblyMergeStrategy in assembly := {
   case _ => MergeStrategy.first
 }
 
+run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
+import spray.revolver.SbtCompatImpl.reStart
+fullClasspath in reStart <<= fullClasspath in Compile
+
 test in assembly := {}

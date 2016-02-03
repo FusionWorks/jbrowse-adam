@@ -10,6 +10,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 object SparkContextFactory {
 
   val conf = ConfigFactory.load()
+  var masterUrl: Option[String] = None
 
   private var sparkContext: Option[SparkContext] = None
   private lazy val sparkSqlContext = new SQLContext(getSparkContext)
@@ -20,9 +21,19 @@ object SparkContextFactory {
       case None =>
         val sparkConf = new SparkConf()
           .setAppName("spark-context")
+        masterUrl match {
+          case Some(master) =>
+            sparkConf.setMaster(master)
+          case None =>
+        }
         sparkContext = Some(new SparkContext(sparkConf))
         sparkContext.get
     }
+  }
+
+  def startSparkContext(): Unit = {
+    println("staring SparkContext...")
+    getSparkContext
   }
 
   def getSparkSqlContext = sparkSqlContext
