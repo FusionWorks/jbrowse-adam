@@ -64,8 +64,8 @@ object JBrowseUtil {
   val tracksConfig = TracksConfigLoader.tracksConfig
   val paths = tracksConfig.map(_.filePath)
 
-  val alignmentDF = sqlContext.read.parquet(paths.head.toString)
-  val referenceDF = sqlContext.read.parquet(paths(1).toString)
+  val alignmentDF = sqlContext.read.parquet(paths.head.toString).persist(StorageLevel.MEMORY_AND_DISK)
+  val referenceDF = sqlContext.read.parquet(paths(1).toString).persist(StorageLevel.MEMORY_AND_DISK)
 
   def getTrackList: TrackList = {
     val tracks = tracksConfig.map(trackConfig => {
@@ -105,8 +105,7 @@ object JBrowseUtil {
       )
 
     val alignmentRecordsRDD =
-      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[AlignmentRecord])).
-        persist(StorageLevel.MEMORY_AND_DISK)
+      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[AlignmentRecord]))
     val converter = new AlignmentRecordConverter
 
 
@@ -163,8 +162,7 @@ object JBrowseUtil {
       )
 
     val alignmentRecordsRDD =
-      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[NucleotideContigFragment])).
-        persist(StorageLevel.MEMORY_AND_DISK)
+      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[NucleotideContigFragment]))
 
     val featuresMap = alignmentRecordsRDD.map(x => {
       Map(
@@ -188,13 +186,13 @@ case class Track(
                   `type`: String,
                   storeClass: String,
                   baseUrl: String
-                  )
+                )
 
 case class RefSeqs(
                     name: String,
                     start: Long,
                     end: Long
-                    )
+                  )
 
 case class Global(
                    featureDensity: Double,
@@ -203,6 +201,6 @@ case class Global(
                    scoreMax: Int,
                    scoreMean: Int,
                    scoreStdDev: Double
-                   )
+                 )
 
 case class Features(features: List[Map[String, String]])
