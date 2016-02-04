@@ -1,16 +1,16 @@
 package md.fusionworks.adam.jbrowse.spark
 
-import md.fusionworks.adam.jbrowse.ConfigLoader.{conf, path}
+import md.fusionworks.adam.jbrowse.ConfigLoader.trackConf
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 
 object SparkContextFactory {
-  val configPath = s"spark.$path"
+  val configPath = s"spark.master"
 
   val masterUrl: Option[String] =
-    if (conf.hasPath(configPath)) {
-      Some(conf.getConfig(configPath).getString("master.url"))
+    if (trackConf.hasPath(configPath)) {
+      Some(trackConf.getConfig(configPath).getString("url"))
     } else None
 
   private var sparkContext: Option[SparkContext] = None

@@ -1,11 +1,13 @@
 package md.fusionworks.adam.jbrowse
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 
 object ConfigLoader {
   val conf = ConfigFactory.load()
 
-  var path = conf.getString("config.path")
+  var trackConf: Config = ConfigFactory.load(conf.getString("config.path"))
 
-  def setPath(argPath: String) = path = argPath
+  def loadTrackConf(path: String) = {
+    trackConf = ConfigFactory.load(s"$path.conf")
+  }
 }

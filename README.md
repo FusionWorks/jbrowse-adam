@@ -1,11 +1,20 @@
 # Introduction
 This project implements sample integration between JBrowse and Adam file format
 
-###to run ``jbrowse-adam`` in "local-mode":
+###Preliminary preparations:
 
-`sbt run local` or in sbt-console type `re-start local`
+In folder resources/sample exists tracks for test purpose.
+File local.conf already configured to use them in local-mode.
 
-###to run ``jbrowse-adam`` in "cluster-mode":
+For cluster-mode please, edit file cluster.conf
+
+###To run ``jbrowse-adam`` in "local-mode":
+
+`sbt run local` or in sbt-console type `re-start local` or in application.conf set config.path = "local"
+
+###To run ``jbrowse-adam`` in "cluster-mode":
+
+By default nothing no need to change in application.conf, when config.path = "cluster"
 
 * ssh into emr master instance
 
