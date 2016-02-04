@@ -1,7 +1,7 @@
 package md.fusionworks.adam.jbrowse.models
 
 import htsjdk.samtools.SAMFileHeader
-import md.fusionworks.adam.jbrowse.ConfigLoader
+import md.fusionworks.adam.jbrowse.ConfigLoader.trackConf
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
@@ -14,16 +14,13 @@ import parquet.org.codehaus.jackson.map.ObjectMapper
 import spray.json.{DefaultJsonProtocol, _}
 
 object TracksConfigLoader {
-  val jBrowseConf = ConfigLoader.conf.getConfig("jbrowse")
+  val jBrowseConf = trackConf.getConfig("jbrowse")
 
-  val urlSettingsConf = jBrowseConf.getConfig(ConfigLoader.path)
-
-  val baseUrl = urlSettingsConf.getString("track.base.url")
+  val baseUrl = jBrowseConf.getString("track.base.url")
 
   val tracksConfig = jBrowseConf.getList("tracks").map { cv =>
     val config = cv.unwrapped().asInstanceOf[java.util.HashMap[String, String]]
-    val filePath = urlSettingsConf.getString("url.prefix") + config.get("filePath")
-    TrackConfig(filePath, FileType.withName(config.get("fileType")), config.get("trackType"))
+    TrackConfig(config.get("filePath"), FileType.withName(config.get("fileType")), config.get("trackType"))
   }
 }
 
