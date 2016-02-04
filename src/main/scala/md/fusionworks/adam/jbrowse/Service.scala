@@ -23,7 +23,7 @@ class ServiceActor extends Actor with Service {
 // this trait defines our service behavior independently from the service actor
 trait Service extends HttpService {
 
-  val route = {
+  val route = compressResponse() {
     get {
       path("data" / "trackList.json") {
         complete {
