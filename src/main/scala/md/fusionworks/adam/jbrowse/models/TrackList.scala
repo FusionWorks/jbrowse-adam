@@ -1,7 +1,7 @@
 package md.fusionworks.adam.jbrowse.models
 
 import htsjdk.samtools.SAMFileHeader
-import md.fusionworks.adam.jbrowse.ConfigLoader.trackConf
+import md.fusionworks.adam.jbrowse.ConfigLoader
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
@@ -12,17 +12,6 @@ import org.bdgenomics.adam.rdd.ADAMContext._
 import org.bdgenomics.formats.avro.{AlignmentRecord, NucleotideContigFragment}
 import parquet.org.codehaus.jackson.map.ObjectMapper
 import spray.json.{DefaultJsonProtocol, _}
-
-object TracksConfigLoader {
-  val jBrowseConf = trackConf.getConfig("jbrowse")
-
-  val baseUrl = jBrowseConf.getString("track.base.url")
-
-  val tracksConfig = jBrowseConf.getList("tracks").map { cv =>
-    val config = cv.unwrapped().asInstanceOf[java.util.HashMap[String, String]]
-    TrackConfig(config.get("filePath"), FileType.withName(config.get("fileType")), config.get("trackType"))
-  }
-}
 
 object JsonProtocol extends DefaultJsonProtocol {
 
@@ -54,7 +43,7 @@ case class TrackConfig(filePath: String, fileType: TrackType, trackType: String)
 
 object TrackListUtil {
 
-  val tracksConfig = TracksConfigLoader.tracksConfig
+  val tracksConfig = ConfigLoader.getTrackConfig
 
   def getTrackList: TrackList = {
     val tracks = tracksConfig.map(trackConfig => {
@@ -62,7 +51,7 @@ object TrackListUtil {
       Track(
         `type` = trackConfig.trackType,
         storeClass = "JBrowse/Store/SeqFeature/REST",
-        baseUrl = TracksConfigLoader.baseUrl,
+        baseUrl = ConfigLoader.getBaseUrl,
         label = s"${fileName}_${trackConfig.fileType.toString}",
         key = s"$fileName ${trackConfig.fileType.toString}"
       )
@@ -78,7 +67,7 @@ object JBrowseUtil {
   val sc = SparkContextFactory.getSparkContext
   val sqlContext = SparkContextFactory.getSparkSqlContext
 
-  val paths = TracksConfigLoader.tracksConfig.map(_.filePath)
+  val paths = ConfigLoader.getTrackConfig.map(_.filePath)
 
   val alignmentDF = sqlContext.read.parquet(paths.head.toString).persist(StorageLevel.MEMORY_AND_DISK)
   val referenceDF = sqlContext.read.parquet(paths(1).toString).persist(StorageLevel.MEMORY_AND_DISK)
