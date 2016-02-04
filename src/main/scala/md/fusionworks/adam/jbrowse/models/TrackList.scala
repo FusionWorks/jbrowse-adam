@@ -84,7 +84,6 @@ object JBrowseUtil {
   val referenceDF = sqlContext.read.parquet(paths(1).toString).persist(StorageLevel.MEMORY_AND_DISK)
 
 
-
   def getRefSeqs: List[RefSeqs] = {
     val filteredDataFrame = referenceDF.filter(referenceDF("fragmentStartPosition") >= 0 && referenceDF("fragmentStartPosition") != null)
     val colectDataFrame = filteredDataFrame.select("contig", "fragmentStartPosition")
@@ -109,7 +108,10 @@ object JBrowseUtil {
       )
 
     val alignmentRecordsRDD =
-      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[AlignmentRecord]))
+      filteredDataFrame.toJSON.mapPartitions(partition => {
+        val mapper = new ObjectMapper()
+        partition.map(str => mapper.readValue(str, classOf[AlignmentRecord]))
+      })
     val converter = new AlignmentRecordConverter
 
 
@@ -166,11 +168,13 @@ object JBrowseUtil {
       )
 
     val alignmentRecordsRDD =
-      filteredDataFrame.toJSON.map(str => new ObjectMapper().readValue(str, classOf[NucleotideContigFragment]))
+      filteredDataFrame.toJSON.mapPartitions(partition => {
+        val mapper = new ObjectMapper()
+        partition.map(str => mapper.readValue(str, classOf[NucleotideContigFragment]))
+      })
 
     val featuresMap = alignmentRecordsRDD.map(x => {
       Map(
-        //"description" ->x.getDescription,
         "seq" -> x.getFragmentSequence,
         "flag" -> x.getFragmentNumber.toString,
         "start" -> x.getFragmentStartPosition.toString,
