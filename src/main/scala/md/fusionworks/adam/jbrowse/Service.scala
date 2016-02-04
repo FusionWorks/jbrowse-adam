@@ -27,7 +27,7 @@ trait Service extends HttpService {
     get {
       path("data" / "trackList.json") {
         complete {
-          JBrowseUtil.getTrackList
+          TrackListUtil.getTrackList
         }
       }
     } ~

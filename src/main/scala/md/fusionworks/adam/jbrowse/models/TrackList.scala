@@ -52,17 +52,8 @@ import md.fusionworks.adam.jbrowse.models.FileType._
 
 case class TrackConfig(filePath: String, fileType: TrackType, trackType: String)
 
-object JBrowseUtil {
-
-  private var headerMap = Map[String, SAMFileHeader]()
-  val sc = SparkContextFactory.getSparkContext
-  val sqlContext = SparkContextFactory.getSparkSqlContext
-
+object TrackListUtil {
   val tracksConfig = TracksConfigLoader.tracksConfig
-  val paths = tracksConfig.map(_.filePath)
-
-  val alignmentDF = sqlContext.read.parquet(paths.head.toString)
-  val referenceDF = sqlContext.read.parquet(paths(1).toString)
 
   def getTrackList: TrackList = {
     val tracks = tracksConfig.map(trackConfig => {
@@ -77,6 +68,21 @@ object JBrowseUtil {
     })
     TrackList(tracks = tracks)
   }
+}
+
+
+object JBrowseUtil {
+
+  private var headerMap = Map[String, SAMFileHeader]()
+  val sc = SparkContextFactory.getSparkContext
+  val sqlContext = SparkContextFactory.getSparkSqlContext
+
+  val paths = TracksConfigLoader.tracksConfig.map(_.filePath)
+
+  val alignmentDF = sqlContext.read.parquet(paths.head.toString)
+  val referenceDF = sqlContext.read.parquet(paths(1).toString)
+
+
 
   def getRefSeqs: List[RefSeqs] = {
     val filteredDataFrame = referenceDF.filter(referenceDF("fragmentStartPosition") >= 0 && referenceDF("fragmentStartPosition") != null)
