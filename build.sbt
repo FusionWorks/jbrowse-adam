@@ -52,7 +52,6 @@ assemblyMergeStrategy in assembly := {
   //case PathList(ps@_*) if ps.last endsWith "reference.conf" => MergeStrategy.concat
   case PathList(ps@_*) if ps.last endsWith "_SUCCESS" => MergeStrategy.discard
   case PathList(ps@_*) if ps.last endsWith ".parquet" => MergeStrategy.discard
-  case PathList(ps@_*) if ps.last endsWith ".adam" => MergeStrategy.discard
   case _ => MergeStrategy.first
 }
 
