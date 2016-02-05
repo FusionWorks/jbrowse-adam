@@ -5,7 +5,8 @@ package md.fusionworks.adam.jbrowse
  */
 
 
-import md.fusionworks.adam.jbrowse.models._
+import md.fusionworks.adam.jbrowse.model._
+import md.fusionworks.adam.jbrowse.service.JBrowseService
 import org.specs2.matcher.ShouldMatchers
 import org.specs2.mutable._
 
@@ -32,7 +33,7 @@ class TestListSpray extends Specification with ShouldMatchers{
 
     "Global" should {
       "getGlobal" in {
-        val get = JBrowseUtil.getGlobal
+        val get = JBrowseService.getGlobal
         //get must contain(Global(0.02,234235,87,87,42,2.1))
        // get must assert(Global(0.02,234235,87,87,42,2.1))
        // get must Global(0.02,234235,87,87,42,2.1)
@@ -50,7 +51,7 @@ class TestListSpray extends Specification with ShouldMatchers{
 
   "RefSeqs" should {
     "getRefSeqs" in {
-      val get = JBrowseUtil.getRefSeqs
+      val get = JBrowseService.getRefSeqs
       get must contain(RefSeqs("ctgA",1523375,1242))
       get must contain(RefSeqs("ctgB",66, 0))
       // println(get)
@@ -60,7 +61,7 @@ class TestListSpray extends Specification with ShouldMatchers{
 
   "TrakList" should {
     "getTrackList:" in {
-      val get = JBrowseUtil.getTrackList
+      val get = JBrowseService.getTrackList
      get.tracks must contain(Track(
         "mygene_track",
         "My ADAM Genes",
