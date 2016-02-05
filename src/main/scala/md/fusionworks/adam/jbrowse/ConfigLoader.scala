@@ -16,7 +16,7 @@ object ConfigLoader {
 
   def getSparkMasterUrl =
     if (trackConf.hasPath(ConfigPath)) {
-      Some(trackConf.getConfig(ConfigPath).getString("url"))
+      Some(trackConf.getString(s"$ConfigPath.url"))
     } else None
 
 
