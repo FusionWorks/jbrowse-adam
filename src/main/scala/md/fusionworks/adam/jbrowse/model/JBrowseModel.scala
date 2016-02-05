@@ -31,11 +31,6 @@ case class Global(
 
 case class Features(features: List[Map[String, String]])
 
-object TrackType extends Enumeration {
-  type TrackType = Value
-  val Alignment, Reference, Variants = Value
-}
-
 
 object JsonProtocol extends DefaultJsonProtocol {
   implicit val trackFormat = jsonFormat5(Track)
