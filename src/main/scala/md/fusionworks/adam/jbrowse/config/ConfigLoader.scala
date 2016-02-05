@@ -1,8 +1,7 @@
 package md.fusionworks.adam.jbrowse.config
 
 import com.typesafe.config.ConfigFactory
-import md.fusionworks.adam.jbrowse.model.TrackType
-import md.fusionworks.adam.jbrowse.model.TrackType.TrackType
+import md.fusionworks.adam.jbrowse.config.TrackType.TrackType
 import org.bdgenomics.adam.rdd.ADAMContext._
 
 object ConfigLoader {
@@ -36,4 +35,11 @@ object ConfigLoader {
   def getBaseUrl: String = jBrowseConf.getString("jbrowse.baseUrl")
 }
 
+
 case class TrackConfig(filePath: String, fileType: TrackType, trackType: String)
+
+
+object TrackType extends Enumeration {
+  type TrackType = Value
+  val Alignment, Reference, Variants = Value
+}
