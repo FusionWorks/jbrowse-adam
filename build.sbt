@@ -42,14 +42,7 @@ Revolver.settings
 
 //todo: try to clean this
 assemblyMergeStrategy in assembly := {
-  //case PathList("git.properties") => MergeStrategy.discard
-  //case PathList("log4j.properties") => MergeStrategy.first
   case PathList("META-INF", xs@_*) => MergeStrategy.discard
-  //case PathList(ps@_*) if ps.last endsWith ".html" => MergeStrategy.first
-  //case PathList(ps@_*) if ps.last endsWith ".txt" => MergeStrategy.first
-  //case PathList(ps@_*) if ps.last endsWith "package-info.class" => MergeStrategy.discard
-  //case PathList(ps@_*) if ps.last endsWith "plugin.properties" => MergeStrategy.concat
-  //case PathList(ps@_*) if ps.last endsWith "reference.conf" => MergeStrategy.concat
   case PathList(ps@_*) if ps.last endsWith "_SUCCESS" => MergeStrategy.discard
   case PathList(ps@_*) if ps.last endsWith ".parquet" => MergeStrategy.discard
   case _ => MergeStrategy.first

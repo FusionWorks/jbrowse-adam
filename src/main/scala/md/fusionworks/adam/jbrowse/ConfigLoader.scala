@@ -6,25 +6,30 @@ import org.bdgenomics.adam.rdd.ADAMContext._
 
 object ConfigLoader {
 
+  private val ConfigPath = "spark.master"
+
   // Load configuration from application.conf
   val conf = ConfigFactory.load()
 
   // Load configuration from local or cluster.conf
   var trackConf = ConfigFactory.load(conf.getString("config.path"))
 
-  // JBrowse configuration
-  val jBrowseConf = trackConf.getConfig("jbrowse")
+  def getSparkMasterUrl =
+    if (trackConf.hasPath(ConfigPath)) {
+      Some(trackConf.getConfig(ConfigPath).getString("url"))
+    } else None
+
 
   def loadTrackConf(path: String) = {
     trackConf = ConfigFactory.load(s"$path.conf")
   }
 
   def getTrackConfig: List[TrackConfig] = {
-    jBrowseConf.getList("tracks").map { cv =>
+    trackConf.getList("jbrowse.tracks").map { cv =>
       val config = cv.unwrapped().asInstanceOf[java.util.HashMap[String, String]]
       TrackConfig(config.get("filePath"), FileType.withName(config.get("fileType")), config.get("trackType"))
     }
   }
 
-  def getBaseUrl: String = jBrowseConf.getString("track.base.url")
+  def getBaseUrl: String = trackConf.getString("jbrowse.track.base.url")
 }
