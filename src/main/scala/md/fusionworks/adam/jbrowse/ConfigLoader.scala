@@ -6,7 +6,7 @@ import org.bdgenomics.adam.rdd.ADAMContext._
 
 object ConfigLoader {
 
-  private val ConfigPath = "spark.master"
+  private val ConfigPath = "spark.master.url"
 
   // Load configuration from application.conf
   val conf = ConfigFactory.load()
@@ -16,7 +16,7 @@ object ConfigLoader {
 
   def getSparkMasterUrl =
     if (trackConf.hasPath(ConfigPath)) {
-      Some(trackConf.getString(s"$ConfigPath.url"))
+      Some(trackConf.getString(ConfigPath))
     } else None
 
 
