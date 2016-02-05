@@ -1,10 +1,11 @@
 package md.fusionworks.adam.jbrowse
 
+import md.fusionworks.adam.jbrowse.service.ServiceRoutes
 import org.specs2.mutable.Specification
 import spray.http.StatusCodes._
 import spray.testkit.Specs2RouteTest
 
-class ServiceSpec extends Specification with Specs2RouteTest with Service {
+class ServiceSpec extends Specification with Specs2RouteTest with ServiceRoutes {
   def actorRefFactory = system
   
   "Service" should {

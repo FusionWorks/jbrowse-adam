@@ -4,6 +4,8 @@ import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
+import md.fusionworks.adam.jbrowse.config.ConfigLoader
+import md.fusionworks.adam.jbrowse.service.ServiceActor
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import spray.can.Http
 
@@ -22,7 +24,7 @@ object Boot extends App {
   // start a new HTTP server on port 8080 with our service actor as the handler
   IO(Http) ? Http.Bind(service, interface = "0.0.0.0", port = 8080)
 
-  if (args.nonEmpty) ConfigLoader.loadTrackConf(args.head)
+  if (args.nonEmpty) ConfigLoader.loadJBrowseConfFromPath(args.head)
 
-  SparkContextFactory.getSparkContext
+  SparkContextFactory.startSparkContext()
 }

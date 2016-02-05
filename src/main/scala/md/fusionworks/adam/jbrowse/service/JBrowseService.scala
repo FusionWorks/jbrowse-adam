@@ -1,7 +1,8 @@
-package md.fusionworks.adam.jbrowse.models
+package md.fusionworks.adam.jbrowse.service
 
 import htsjdk.samtools.SAMFileHeader
-import md.fusionworks.adam.jbrowse.ConfigLoader
+import md.fusionworks.adam.jbrowse.config.ConfigLoader
+import md.fusionworks.adam.jbrowse.model._
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
@@ -11,66 +12,35 @@ import org.bdgenomics.adam.models.SAMFileHeaderWritable
 import org.bdgenomics.adam.rdd.ADAMContext._
 import org.bdgenomics.formats.avro.{AlignmentRecord, NucleotideContigFragment}
 import parquet.org.codehaus.jackson.map.ObjectMapper
-import spray.json.{DefaultJsonProtocol, _}
 
-object JsonProtocol extends DefaultJsonProtocol {
-
-  implicit object TrackTypeFormat extends RootJsonFormat[FileType.TrackType] {
-    def write(obj: FileType.TrackType): JsValue = JsString(obj.toString)
-
-    def read(json: JsValue): FileType.TrackType = json match {
-      case JsString(str) => FileType.withName(str)
-      case _ => throw new DeserializationException("Enum string expected")
-    }
-  }
-
-  implicit val tracksConfigFormat = jsonFormat3(TrackConfig)
-  implicit val trackFormat = jsonFormat5(Track)
-  implicit val trackListFormat = jsonFormat1(TrackList)
-  implicit val refSeqsFormat = jsonFormat3(RefSeqs)
-  implicit val globalFormat = jsonFormat6(Global)
-  implicit val featuresFormat = jsonFormat1(Features)
-}
-
-object FileType extends Enumeration {
-  type TrackType = Value
-  val Alignment, Reference, Variants = Value
-}
-
-import md.fusionworks.adam.jbrowse.models.FileType._
-
-case class TrackConfig(filePath: String, fileType: TrackType, trackType: String)
-
-object TrackListUtil {
-
-  val tracksConfig = ConfigLoader.getTrackConfig
-
-  def getTrackList: TrackList = {
-    val tracks = tracksConfig.map(trackConfig => {
-      val fileName = trackConfig.filePath.substring(trackConfig.filePath.lastIndexOf("/") + 1)
-      Track(
-        `type` = trackConfig.trackType,
-        storeClass = "JBrowse/Store/SeqFeature/REST",
-        baseUrl = ConfigLoader.getBaseUrl,
-        label = s"${fileName}_${trackConfig.fileType.toString}",
-        key = s"$fileName ${trackConfig.fileType.toString}"
-      )
-    })
-    TrackList(tracks = tracks)
-  }
-}
-
-
-object JBrowseUtil {
+object JBrowseService {
 
   private var headerMap = Map[String, SAMFileHeader]()
   val sc = SparkContextFactory.getSparkContext
   val sqlContext = SparkContextFactory.getSparkSqlContext
 
-  val paths = ConfigLoader.getTrackConfig.map(_.filePath)
+  val tracksConfig = ConfigLoader.getTracksConfig
+  val paths = tracksConfig.map(_.filePath)
 
-  val alignmentDF = sqlContext.read.parquet(paths.head.toString).persist(StorageLevel.MEMORY_AND_DISK)
-  val referenceDF = sqlContext.read.parquet(paths(1).toString).persist(StorageLevel.MEMORY_AND_DISK)
+  lazy val alignmentDF = sqlContext.read.parquet(paths.head.toString).persist(StorageLevel.MEMORY_AND_DISK)
+  lazy val referenceDF = sqlContext.read.parquet(paths(1).toString).persist(StorageLevel.MEMORY_AND_DISK)
+
+
+  def getTrackList: TrackList = {
+    def getFileName(path: String) = path.substring(path.lastIndexOf("/") + 1)
+
+    val tracks = tracksConfig.map(trackConfig => {
+      val fileName = getFileName(trackConfig.filePath)
+      Track(
+        `type` = trackConfig.trackType,
+        storeClass = "JBrowse/Store/SeqFeature/REST",
+        baseUrl = ConfigLoader.getBaseUrl,
+        label = s"${fileName}_${trackConfig.fileType}",
+        key = s"$fileName ${trackConfig.fileType}"
+      )
+    })
+    TrackList(tracks = tracks)
+  }
 
 
   def getRefSeqs: List[RefSeqs] = {
@@ -175,29 +145,3 @@ object JBrowseUtil {
 
 }
 
-case class TrackList(tracks: List[Track])
-
-case class Track(
-                  label: String,
-                  key: String,
-                  `type`: String,
-                  storeClass: String,
-                  baseUrl: String
-                )
-
-case class RefSeqs(
-                    name: String,
-                    start: Long,
-                    end: Long
-                  )
-
-case class Global(
-                   featureDensity: Double,
-                   featureCount: Int,
-                   scoreMin: Int,
-                   scoreMax: Int,
-                   scoreMean: Int,
-                   scoreStdDev: Double
-                 )
-
-case class Features(features: List[Map[String, String]])

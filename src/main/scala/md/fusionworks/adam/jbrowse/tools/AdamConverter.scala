@@ -1,4 +1,4 @@
-package md.fusionworks.adam.jbrowse.models.convert
+package md.fusionworks.adam.jbrowse.tools
 
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.bdgenomics.adam.rdd.{ADAMContext, ADAMRDDFunctions}

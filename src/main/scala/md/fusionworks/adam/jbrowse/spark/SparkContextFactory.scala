@@ -1,6 +1,6 @@
 package md.fusionworks.adam.jbrowse.spark
 
-import md.fusionworks.adam.jbrowse.ConfigLoader
+import md.fusionworks.adam.jbrowse.config.ConfigLoader
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -14,13 +14,15 @@ object SparkContextFactory {
     sparkContext match {
       case Some(context) => context
       case None =>
-        val sparkConf = new SparkConf()
-          .setAppName("spark-context")
-        ConfigLoader.getSparkMasterUrl match {
-          case Some(master) =>
-            sparkConf.setMaster(master)
-          case None =>
+        val sparkConf = new SparkConf().setAppName("JBrowse-ADAM")
+
+        val jbConf = ConfigLoader.getJBrowseConf
+
+        if (jbConf.hasPath("spark.masterUrl")) {
+          val masterUrl = jbConf.getString("spark.masterUrl")
+          sparkConf.setMaster(masterUrl)
         }
+
         sparkContext = Some(new SparkContext(sparkConf))
         sparkContext.get
     }
