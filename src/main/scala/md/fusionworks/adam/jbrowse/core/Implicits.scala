@@ -1,4 +1,4 @@
-package md.fusionworks.adam.jbrowse.utils
+package md.fusionworks.adam.jbrowse.core
 
 import htsjdk.samtools.SAMFileHeader
 import org.apache.spark.broadcast.Broadcast
@@ -16,39 +16,21 @@ object Implicits {
 
   implicit def toReferenceRDDFunctions(rdd: RDD[NucleotideContigFragment]): ReferenceRDDFunctions =
     new ReferenceRDDFunctions(rdd)
+
   implicit def toAlignmentRDDFunctions(rdd: RDD[AlignmentRecord]): AlignmentRDDFunctions =
     new AlignmentRDDFunctions(rdd)
 }
 
 
-object Headers {
-  private var headerMap = Map[String, SAMFileHeader]()
-
-  def getHeader(contigName: String, alignmentRDD: RDD[AlignmentRecord]): Broadcast[SAMFileHeaderWritable] = {
-    val header = headerMap.get(contigName) match {
-      case Some(h) => h
-      case None =>
-        val sd = alignmentRDD.adamGetSequenceDictionary()
-        val rgd = alignmentRDD.adamGetReadGroupDictionary()
-        val converter = new AlignmentRecordConverter
-        val h = converter.createSAMHeader(sd, rgd)
-        headerMap += (contigName -> h)
-        headerMap(contigName)
-    }
-
-    alignmentRDD.context.broadcast(SAMFileHeaderWritable(header))
-  }
-
-}
-
 
 class DataFrameFunctions(df: DataFrame) {
 
   def filterReferenceDF(start: Long, end: Long, contigName: String) = {
-    val position = df.first()
-    val contigLength = position.getAs[Row]("contig").getAs[Long]("contigLength")
-    val numberOfFragmentsInContig = position.getAs[Integer]("numberOfFragmentsInContig")
+    val firstRow = df.first()
+    val contigLength = firstRow.getAs[Row]("contig").getAs[Long]("contigLength")
+    val numberOfFragmentsInContig = firstRow.getAs[Integer]("numberOfFragmentsInContig")
     val fragmentLength = contigLength / numberOfFragmentsInContig
+
     df.filter(df("contig.contigName") === contigName)
       .filter(
         df("fragmentStartPosition") < end && df("fragmentStartPosition") != null &&
@@ -82,31 +64,45 @@ class DataFrameFunctions(df: DataFrame) {
 }
 
 class ReferenceRDDFunctions(rdd: RDD[NucleotideContigFragment]) {
+
   def toJBrowseFormat = {
-    rdd.map(record => referenceRecToJbFormat(record))
+    rdd.map(record => RecordConverter.referenceRecToJbFormat(record))
   }
 
-  private def referenceRecToJbFormat(referenceRecord: NucleotideContigFragment) = {
-    Map(
-      "seq" -> referenceRecord.getFragmentSequence,
-      "flag" -> referenceRecord.getFragmentNumber.toString,
-      "start" -> referenceRecord.getFragmentStartPosition.toString,
-      "seq_id" -> referenceRecord.getContig.getContigName
-    )
-  }
 }
 
 class AlignmentRDDFunctions(rdd: RDD[AlignmentRecord]) {
 
   def toJBrowseFormat(contigName: String) = {
+    val header = RecordConverter.getHeader(contigName, rdd)
+    val converter = new AlignmentRecordConverter
     rdd.mapPartitions { case partition =>
-      val header = Headers.getHeader(contigName, rdd)
-      val converter = new AlignmentRecordConverter
-      partition.map(record => alignmentRecToJbFormat(record, header, converter))
+      partition.map(record => RecordConverter.alignmentRecToJbFormat(record, header, converter))
     }
   }
 
-  private def alignmentRecToJbFormat(record: AlignmentRecord, header: Broadcast[SAMFileHeaderWritable], converter: AlignmentRecordConverter) = {
+}
+
+object RecordConverter {
+
+  private var headerMap = Map[String, SAMFileHeader]()
+
+  def getHeader(contigName: String, alignmentRDD: RDD[AlignmentRecord]): Broadcast[SAMFileHeaderWritable] = {
+    val header = headerMap.get(contigName) match {
+      case Some(h) => h
+      case None =>
+        val sd = alignmentRDD.adamGetSequenceDictionary()
+        val rgd = alignmentRDD.adamGetReadGroupDictionary()
+        val converter = new AlignmentRecordConverter
+        val h = converter.createSAMHeader(sd, rgd)
+        headerMap += (contigName -> h)
+        headerMap(contigName)
+    }
+
+    alignmentRDD.context.broadcast(SAMFileHeaderWritable(header))
+  }
+
+  def alignmentRecToJbFormat(record: AlignmentRecord, header: Broadcast[SAMFileHeaderWritable], converter: AlignmentRecordConverter) = {
     val samRecord = converter.convert(record, header.value)
     var jbRecord = Map(
       "name" -> record.getReadName,
@@ -128,5 +124,14 @@ class AlignmentRDDFunctions(rdd: RDD[AlignmentRecord]) {
     if (!record.getRecordGroupName.isEmpty)
       jbRecord += ("rg" -> record.getRecordGroupName)
     jbRecord
+  }
+
+  def referenceRecToJbFormat(referenceRecord: NucleotideContigFragment) = {
+    Map(
+      "seq" -> referenceRecord.getFragmentSequence,
+      "flag" -> referenceRecord.getFragmentNumber.toString,
+      "start" -> referenceRecord.getFragmentStartPosition.toString,
+      "seq_id" -> referenceRecord.getContig.getContigName
+    )
   }
 }

@@ -1,16 +1,14 @@
 package md.fusionworks.adam.jbrowse.service
 
-import htsjdk.samtools.SAMFileHeader
 import md.fusionworks.adam.jbrowse.config.ConfigLoader
 import md.fusionworks.adam.jbrowse.model._
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
-import md.fusionworks.adam.jbrowse.utils.Implicits._
+import md.fusionworks.adam.jbrowse.core.Implicits._
 import org.apache.spark.sql.functions._
 import org.apache.spark.storage.StorageLevel
 
 object JBrowseService {
 
-  private var headerMap = Map[String, SAMFileHeader]()
   val sc = SparkContextFactory.getSparkContext
   val sqlContext = SparkContextFactory.getSparkSqlContext
 
