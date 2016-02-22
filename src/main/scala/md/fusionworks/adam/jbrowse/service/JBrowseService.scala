@@ -64,8 +64,7 @@ object JBrowseService {
     dataFrameEntry.trackType match {
       case TrackType.Alignment => getAlignmentFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
       case TrackType.Reference => getReferenceFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
-      //TODO: need code unique for variants. Now this copy
-      case TrackType.Variants => getAlignmentFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
+      case TrackType.Variants => getVariantFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
     }
   }
 
@@ -80,8 +79,8 @@ object JBrowseService {
     Features(features)
   }
 
-  def getVariantFeatures(start: Long, end: Long, contigName: String): Features = {
-    val features = alignmentDF.filterAlignmentDF(start, end, contigName)
+  def getVariantFeatures(start: Long, end: Long, contigName: String,  dataFrame: DataFrame): Features = {
+    val features = dataFrame.filterAlignmentDF(start, end, contigName)
       .variantsDfToRDD
       .toJBrowseFormat
       .collect()
