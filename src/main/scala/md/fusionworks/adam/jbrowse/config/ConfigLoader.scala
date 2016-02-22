@@ -28,7 +28,12 @@ object ConfigLoader {
   def getTracksConfig: List[TrackConfig] = {
     jBrowseConf.getList("jbrowse.tracks").map { cv =>
       val config = cv.unwrapped().asInstanceOf[java.util.HashMap[String, String]]
-      TrackConfig(config.get("filePath"), TrackType.withName(config.get("fileType")), config.get("trackType"))
+      TrackConfig(
+        config.get("filePath"),
+        TrackType.withName(config.get("fileType")),
+        config.get("trackType"),
+        java.util.UUID.randomUUID.toString
+      )
     }
   }
 
@@ -36,7 +41,7 @@ object ConfigLoader {
 }
 
 
-case class TrackConfig(filePath: String, fileType: TrackType, trackType: String)
+case class TrackConfig(filePath: String, fileType: TrackType, trackType: String, id: String)
 
 
 object TrackType extends Enumeration {
