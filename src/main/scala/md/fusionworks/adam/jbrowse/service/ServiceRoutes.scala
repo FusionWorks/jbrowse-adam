@@ -39,19 +39,16 @@ trait ServiceRoutes extends HttpService {
         }
       } ~
       get {
-        path("data" / "stats" / "global") {
+        path("data" / Segment / "stats" / "global") { trackId: String =>
           complete {
             JBrowseService.getGlobal
           }
         }
       } ~
-      path("data" / "features" / Rest) { pathRest =>
+      path("data" / Segment / "features" / Segment) { (trackId: String, contigName: String) =>
         parameters('start, 'end,'reference_sequences_only.as[Boolean]?) {
           (start, end, reference_sequences_only) =>
-            if(reference_sequences_only == Some(true))
-              complete(JBrowseService.getReferenceFeatures(start.toLong, end.toLong, pathRest))
-            else
-              complete(JBrowseService.getAlignmentFeatures(start.toLong, end.toLong, pathRest))
+            complete(JBrowseService.getFeatures(start.toLong, end.toLong, contigName, trackId))
         }
       } ~
       path("") {
