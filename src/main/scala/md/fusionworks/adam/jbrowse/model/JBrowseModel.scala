@@ -1,6 +1,6 @@
 package md.fusionworks.adam.jbrowse.model
 
-import spray.json.DefaultJsonProtocol
+import spray.json._
 
 trait JBrowseModel
 
@@ -29,7 +29,7 @@ case class Global(
                    scoreStdDev: Double
                  )
 
-case class Features(features: List[Map[String, String]])
+case class Features(features: List[Map[String, Any]])
 
 
 object JsonProtocol extends DefaultJsonProtocol {
@@ -37,5 +37,28 @@ object JsonProtocol extends DefaultJsonProtocol {
   implicit val trackListFormat = jsonFormat1(TrackList)
   implicit val refSeqsFormat = jsonFormat3(RefSeqs)
   implicit val globalFormat = jsonFormat6(Global)
+
+  implicit object AnyJsonFormat extends JsonFormat[Any] {
+    def write(x: Any) = x match {
+      case n: Int => JsNumber(n)
+      case n: Long => JsNumber(n)
+      case s: String => JsString(s)
+      case x: Seq[_] => seqFormat[Any].write(x)
+      case m: Map[String, _] => mapFormat[String, Any].write(m)
+      case b: Boolean if b => JsTrue
+      case b: Boolean if !b => JsFalse
+      case x => serializationError("Do not understand object of type " + x.getClass.getName)
+    }
+    def read(value: JsValue) = value match {
+      case JsNumber(n) => n.intValue()
+      case JsString(s) => s
+      case a: JsArray => listFormat[Any].read(value)
+      case o: JsObject => mapFormat[String, Any].read(value)
+      case JsTrue => true
+      case JsFalse => false
+      case x => deserializationError("Do not understand how to deserialize " + x)
+    }
+  }
   implicit val featuresFormat = jsonFormat1(Features)
+
 }

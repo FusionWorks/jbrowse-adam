@@ -11,7 +11,7 @@ import org.apache.spark.storage.StorageLevel
 
 object JBrowseService {
 
-  val sc = SparkContextFactory.getSparkContext
+  val sc = SparkContextFactory.getSparkContext()
   val sqlContext = SparkContextFactory.getSparkSqlContext
 
   val tracksConfig = ConfigLoader.getTracksConfig
@@ -76,6 +76,17 @@ object JBrowseService {
       .collect()
       .toList
       .sortBy(x => x("start"))
+
+    Features(features)
+  }
+
+  def getVariantFeatures(start: Long, end: Long, contigName: String): Features = {
+    val features = alignmentDF.filterAlignmentDF(start, end, contigName)
+      .variantsDfToRDD
+      .toJBrowseFormat
+      .collect()
+      .toList
+      .sortBy(x => x("start").asInstanceOf[Long])
 
     Features(features)
   }

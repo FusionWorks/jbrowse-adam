@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, DataFrame}
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
-import org.bdgenomics.formats.avro.{AlignmentRecord, NucleotideContigFragment}
+import org.bdgenomics.formats.avro.{Variant, AlignmentRecord, NucleotideContigFragment}
 import parquet.org.codehaus.jackson.map.ObjectMapper
 import org.bdgenomics.adam.rdd.ADAMContext._
 
@@ -19,6 +19,8 @@ object Implicits {
 
   implicit def toAlignmentRDDFunctions(rdd: RDD[AlignmentRecord]): AlignmentRDDFunctions =
     new AlignmentRDDFunctions(rdd)
+  implicit def toVariantRDDFunctions(rdd: RDD[Variant]): VariantRDDFunctions =
+    new VariantRDDFunctions(rdd)
 }
 
 
@@ -61,6 +63,22 @@ class DataFrameFunctions(df: DataFrame) {
     })
   }
 
+  def filterVariantDF(start: Long, end: Long, contigName: String) = {
+    df.filter(df("contig.contigName") === contigName)
+      .filter(
+        df("start") < end && df("start") != null &&
+          df("end") > start && df("end") != null
+      )
+  }
+
+
+  def variantsDfToRDD = {
+    df.toJSON.mapPartitions(partition => {
+      val mapper = new ObjectMapper()
+      partition.map(str => mapper.readValue(str, classOf[Variant]))
+    })
+  }
+
 }
 
 class ReferenceRDDFunctions(rdd: RDD[NucleotideContigFragment]) {
@@ -81,6 +99,13 @@ class AlignmentRDDFunctions(rdd: RDD[AlignmentRecord]) {
     }
   }
 
+}
+
+class VariantRDDFunctions(rdd: RDD[Variant]) {
+
+  def toJBrowseFormat = {
+    rdd.map(record => RecordConverter.variantRecToJbFormat(record))
+  }
 }
 
 object RecordConverter {
@@ -132,6 +157,22 @@ object RecordConverter {
       "flag" -> referenceRecord.getFragmentNumber.toString,
       "start" -> referenceRecord.getFragmentStartPosition.toString,
       "seq_id" -> referenceRecord.getContig.getContigName
+    )
+  }
+
+  def variantRecToJbFormat(variantRecord: Variant) = {
+    Map(
+      "start" -> variantRecord.getStart,
+      "end" -> variantRecord.getEnd,
+      "seq_id" -> variantRecord.getContig.getContigName,
+      "reference_allele" -> variantRecord.getReferenceAllele,
+      "alternative_alleles" -> Map(
+        "values" -> List(variantRecord.getAlternateAllele),
+        "meta" -> Map(
+          "description" -> "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples"
+        )
+      ),
+      "debug_to_string" -> variantRecord.toString
     )
   }
 }
