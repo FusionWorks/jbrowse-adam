@@ -4,7 +4,7 @@ import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
 import org.bdgenomics.adam.rdd.ADAMContext._
 
 object AdamConverter {
-  private val sc = SparkContextFactory.getSparkContext
+  private val sc = SparkContextFactory.getSparkContext(Some("local[*]"))
 
   def fastaToADAM(inputPath: String, outputPath: String) = {
     sc.loadSequence(inputPath).adamParquetSave(outputPath)

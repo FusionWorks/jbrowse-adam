@@ -6,21 +6,23 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 
 object SparkContextFactory {
-
   private var sparkContext: Option[SparkContext] = None
-  private lazy val sparkSqlContext = new SQLContext(getSparkContext)
+  private lazy val sparkSqlContext = new SQLContext(getSparkContext())
 
-  def getSparkContext: SparkContext = {
+  def getSparkContext(master: Option[String] = None): SparkContext = {
     sparkContext match {
       case Some(context) => context
       case None =>
         val sparkConf = new SparkConf().setAppName("JBrowse-ADAM")
 
-        val jbConf = ConfigLoader.getJBrowseConf
-
-        if (jbConf.hasPath("spark.masterUrl")) {
-          val masterUrl = jbConf.getString("spark.masterUrl")
-          sparkConf.setMaster(masterUrl)
+        master match {
+          case Some(url) => sparkConf.setMaster(url)
+          case None =>
+            val jbConf = ConfigLoader.getJBrowseConf
+            if (jbConf.hasPath("spark.masterUrl")) {
+              val masterUrl = jbConf.getString("spark.masterUrl")
+              sparkConf.setMaster(masterUrl)
+            }
         }
 
         sparkContext = Some(new SparkContext(sparkConf))
@@ -30,10 +32,10 @@ object SparkContextFactory {
 
   def startSparkContext(): Unit = {
     println("Starting SparkContext...")
-    getSparkContext
+    getSparkContext()
   }
 
   def getSparkSqlContext = sparkSqlContext
 
-  def stopSparkContext() = getSparkContext.stop()
+  def stopSparkContext() = getSparkContext().stop()
 }
