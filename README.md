@@ -4,6 +4,7 @@ This project implements sample integration between JBrowse and Adam file format
 ###Preliminary preparations:
 
 In folder resources/sample exists tracks for test purpose.
+
 File local.conf already configured to use them in local-mode.
 
 For cluster-mode please, edit file cluster.conf
@@ -37,4 +38,35 @@ spark-submit \
 --num-executors 50 \
 --packages org.bdgenomics.adam:adam-core:0.16.0 \
 --class md.fusionworks.adam.jbrowse.Boot target/scala-2.10/jbrowse-adam-assembly-0.1.jar
+```
+
+* convert genomic data from generic formats to ADAM format (local example):
+```
+cd jbrowse-adam \
+sbt console \
+import md.fusionworks.adam.jbrowse.tools._ \
+AdamConverter.vcfToADAM("/path/to/file/generic_data.vcf", "/path/to/file/generic_data.vcf.adam")
+
+Allowed operations:
+- fastaToADAM
+- vcfToADAM
+- bam_samToADAM
+```
+
+* convert genomic data from generic formats to ADAM format (EMR/S3 example):
+
+This example works for extreme big files (35+ Gb). \
+You may decrease or remove at all (use default values): num-executors, spark.executor.memory, driver-memory.
+
+```
+spark-submit \
+--master yarn-client \
+--num-executors 50 \
+--conf spark.executor.memory=10g \
+--driver-memory=10g \
+--packages org.bdgenomics.adam:adam-core:0.16.0 \
+--class md.fusionworks.adam.jbrowse.tools.ConvertToAdam \
+target/scala-2.10/jbrowse-adam-assembly-0.1.jar \
+s3n://path/to/file/generic_data.bam \
+s3n://path/to/file/generic_data.bam.adam
 ```
