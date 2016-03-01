@@ -17,11 +17,11 @@ object AdamConverter {
     getSparkContext(inputPath).loadAlignments(inputPath).adamParquetSave(outputPath)
   }
 
-  def getSparkContext(master: String) = {
-    master.take(7).toLowerCase match {
-      case "file://" => SparkContextFactory.getSparkContext(Some("local[*]"))
-      case _ => SparkContextFactory.getSparkContext()
-    }
+  def getSparkContext(inputPath: String) = {
+    if (inputPath.startsWith("file://"))
+      SparkContextFactory.getSparkContext(Some("local[*]"))
+    else
+      SparkContextFactory.getSparkContext()
   }
 }
 
