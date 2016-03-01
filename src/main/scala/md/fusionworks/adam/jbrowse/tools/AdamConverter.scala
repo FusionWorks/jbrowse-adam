@@ -18,9 +18,9 @@ object AdamConverter {
   }
 
   def getSparkContext(master: String) = {
-    master.take(6).toLowerCase match {
-      case "s3n://" => SparkContextFactory.getSparkContext()
-      case _ => SparkContextFactory.getSparkContext(Some("local[*]"))
+    master.take(7).toLowerCase match {
+      case "file://" => SparkContextFactory.getSparkContext(Some("local[*]"))
+      case _ => SparkContextFactory.getSparkContext()
     }
   }
 }
