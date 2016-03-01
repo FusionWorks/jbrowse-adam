@@ -3,7 +3,7 @@ This project implements sample integration between JBrowse and Adam file format
 
 ###Preliminary preparations:
 
-In folder resources/sample exists tracks for test purpose.
+In folder resources/sample exists tracks for test purpose. dedupped_20.bam.adam don't contain all data. Only first 100 Mb of 550.
 
 File local.conf already configured to use them in local-mode.
 
