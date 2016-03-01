@@ -15,6 +15,8 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= sprayDependencies ++ adamDependencies ++ sparkDependencies
 
+mainClass in Compile := Some("md.fusionworks.adam.jbrowse.Boot")
+
 lazy val sprayDependencies = {
   val sprayV = "1.3.3"
   Seq(
@@ -38,9 +40,8 @@ lazy val sparkDependencies = {
   )
 }
 
-Revolver.settings
+Revolver.settings: Seq[sbt.Def.Setting[_]]
 
-//todo: try to clean this
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs@_*) => MergeStrategy.discard
   case PathList(ps@_*) if ps.last endsWith "reference.conf" => MergeStrategy.concat
