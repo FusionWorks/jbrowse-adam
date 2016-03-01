@@ -40,20 +40,20 @@ spark-submit \
 --class md.fusionworks.adam.jbrowse.Boot target/scala-2.10/jbrowse-adam-assembly-0.1.jar
 ```
 
-###To convert genomic data from generic formats to ADAM format (local example):
+###To convert genomic data to ADAM format (local example):
 ```
 cd jbrowse-adam
 sbt console
 import md.fusionworks.adam.jbrowse.tools._
 AdamConverter.vcfToADAM("/path/to/file/generic_data.vcf", "/path/to/file/generic_data.vcf.adam")
-
-Allowed operations:
-- fastaToADAM
-- vcfToADAM
-- bam_samToADAM
 ```
 
-###To convert genomic data from generic formats to ADAM format (EMR/S3 example):
+Allowed operations:
+* fastaToADAM
+* vcfToADAM
+* bam_samToADAM
+
+###To convert genomic data to ADAM format (EMR/S3 example):
 
 This example works for extreme big files (35+ Gb). You may decrease or remove at all (use default values): num-executors, spark.executor.memory, driver-memory.
 
