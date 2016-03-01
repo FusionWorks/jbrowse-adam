@@ -58,6 +58,8 @@ Allowed operations:
 This example works for extreme big files (35+ Gb). You may decrease or remove at all (use default values): num-executors, spark.executor.memory, driver-memory.
 
 ```
+cd jbrowse-adam
+
 spark-submit \
 --master yarn-client \
 --num-executors 50 \
