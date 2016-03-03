@@ -22,31 +22,34 @@ class ServiceActor extends Actor with ServiceRoutes {
 
 // this trait defines our service behavior independently from the service actor
 trait ServiceRoutes extends HttpService {
+  private final val Data = "data"
 
   val route = compressResponse() {
     get {
-      path("data" / "trackList.json") {
-        complete {
-          JBrowseService.getTrackList
+      requestUri { uri =>
+        path(Data / "trackList.json") {
+          complete {
+            JBrowseService.getTrackList(s"${uri.scheme}:${uri.authority}/$Data")
+          }
         }
       }
     } ~
       get {
-        path("data" / "seq" / "refSeqs.json") {
+        path(Data / "seq" / "refSeqs.json") {
           complete {
             JBrowseService.getRefSeqs
           }
         }
       } ~
       get {
-        path("data" / Segment / "stats" / "global") { trackId: String =>
+        path(Data / Segment / "stats" / "global") { trackId: String =>
           complete {
             JBrowseService.getGlobal
           }
         }
       } ~
-      path("data" / Segment / "features" / Segment) { (trackId: String, contigName: String) =>
-        parameters('start, 'end,'reference_sequences_only.as[Boolean]?) {
+      path(Data / Segment / "features" / Segment) { (trackId: String, contigName: String) =>
+        parameters('start, 'end, 'reference_sequences_only.as[Boolean] ?) {
           (start, end, reference_sequences_only) =>
             complete(JBrowseService.getFeatures(start.toLong, end.toLong, contigName, trackId))
         }

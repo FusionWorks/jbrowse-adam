@@ -36,8 +36,6 @@ object ConfigLoader {
       )
     }
   }
-
-  def getBaseUrl: String = jBrowseConf.getString("jbrowse.baseUrl")
 }
 
 

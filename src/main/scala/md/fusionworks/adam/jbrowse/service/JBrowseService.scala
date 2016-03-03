@@ -27,7 +27,7 @@ object JBrowseService {
   )
 
 
-  def getTrackList: TrackList = {
+  def getTrackList(baseUrl: String): TrackList = {
     def getFileName(path: String) = path.substring(path.lastIndexOf("/") + 1)
 
     val tracks = tracksConfig.map(trackConfig => {
@@ -35,7 +35,7 @@ object JBrowseService {
       Track(
         `type` = trackConfig.trackType,
         storeClass = "JBrowse/Store/SeqFeature/REST",
-        baseUrl = s"${ConfigLoader.getBaseUrl}/${trackConfig.id}",
+        baseUrl = s"$baseUrl/${trackConfig.id}",
         label = s"${fileName}_${trackConfig.fileType}",
         key = s"$fileName ${trackConfig.fileType}"
       )
