@@ -17,14 +17,11 @@ object JBrowseService {
   val tracksConfig = ConfigLoader.getTracksConfig
   val paths = tracksConfig.map(_.filePath)
 
-  lazy val alignmentDF = sqlContext.read.parquet(paths.head.toString).persist(StorageLevel.MEMORY_AND_DISK)
-  lazy val referenceDF = sqlContext.read.parquet(paths(1).toString).persist(StorageLevel.MEMORY_AND_DISK)
+  case class DataFrameEntry(trackType: TrackType, dataFrame: DataFrame)
 
-  case class DataFrameEntry(trackId: String, trackType: TrackType, dataFrame: DataFrame)
-
-  lazy val DFList: List[DataFrameEntry] = tracksConfig.map( track =>
-    DataFrameEntry(track.id, track.fileType, sqlContext.read.parquet(track.filePath).persist(StorageLevel.MEMORY_AND_DISK))
-  )
+  lazy val DFList: Map[String, DataFrameEntry] = tracksConfig.map( track =>
+    track.id -> DataFrameEntry(track.fileType, sqlContext.read.parquet(track.filePath).persist(StorageLevel.MEMORY_AND_DISK))
+  ).toMap
 
 
   def getTrackList(baseUrl: String): TrackList = {
@@ -45,6 +42,7 @@ object JBrowseService {
 
 
   def getRefSeqs: List[RefSeqs] = {
+    val referenceDF = DFList.filter(df => df._2.trackType == TrackType.Reference).head._2.dataFrame
     val filteredDataFrame = referenceDF.filter(referenceDF("fragmentStartPosition") >= 0 && referenceDF("fragmentStartPosition") != null)
     val colectDataFrame = filteredDataFrame.select("contig", "fragmentStartPosition")
       .groupBy("contig.contigName").agg(min("fragmentStartPosition"), max("fragmentStartPosition")) // todo: compute correct end
@@ -60,7 +58,7 @@ object JBrowseService {
   def getGlobal: Global = Global(0.02, 234235, 87, 87, 42, 2.1)
 
   def getFeatures(start: Long, end: Long, contigName: String, trackId: String): Features = {
-    val dataFrameEntry = DFList.filter(df => df.trackId == trackId).head
+    val dataFrameEntry = DFList(trackId)
     dataFrameEntry.trackType match {
       case TrackType.Alignment => getAlignmentFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
       case TrackType.Reference => getReferenceFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
@@ -69,7 +67,7 @@ object JBrowseService {
   }
 
   def getAlignmentFeatures(start: Long, end: Long, contigName: String, dataFrame: DataFrame): Features = {
-    val features = alignmentDF.filterAlignmentDF(start, end, contigName)
+    val features = dataFrame.filterAlignmentDF(start, end, contigName)
       .alignmentDfToRDD
       .toJBrowseFormat(contigName)
       .collect()
@@ -92,7 +90,7 @@ object JBrowseService {
 
 
   def getReferenceFeatures(start: Long, end: Long, contigName: String, dataFrame: DataFrame): Features = {
-    val features = referenceDF.filterReferenceDF(start, end, contigName).referenceDfToRDD.toJBrowseFormat
+    val features = dataFrame.filterReferenceDF(start, end, contigName).referenceDfToRDD.toJBrowseFormat
       .collect().toList.sortBy(x => x("start"))
     Features(features)
   }
