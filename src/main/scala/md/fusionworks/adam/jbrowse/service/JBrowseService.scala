@@ -60,9 +60,9 @@ object JBrowseService {
   def getFeatures(start: Long, end: Long, contigName: String, trackId: String): Features = {
     val dataFrameEntry = DFList(trackId)
     dataFrameEntry.trackType match {
-      case TrackType.Alignment => getAlignmentFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
-      case TrackType.Reference => getReferenceFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
-      case TrackType.Variants => getVariantFeatures(start: Long, end: Long, contigName: String, dataFrameEntry.dataFrame)
+      case TrackType.Alignment => getAlignmentFeatures(start, end, contigName, dataFrameEntry.dataFrame)
+      case TrackType.Reference => getReferenceFeatures(start, end, contigName, dataFrameEntry.dataFrame)
+      case TrackType.Variants => getVariantFeatures(start, end, contigName, dataFrameEntry.dataFrame)
     }
   }
 
