@@ -47,7 +47,7 @@ object JsonProtocol extends DefaultJsonProtocol {
       case m: Map[String, _] => mapFormat[String, Any].write(m)
       case b: Boolean if b => JsTrue
       case b: Boolean if !b => JsFalse
-      case x => serializationError("Do not understand object of type " + x.getClass.getName)
+      case z => serializationError("Do not understand object of type " + z.getClass.getName)
     }
     def read(value: JsValue) = value match {
       case JsNumber(n) => n.intValue()
