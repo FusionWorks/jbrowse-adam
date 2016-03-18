@@ -7,7 +7,7 @@ import org.apache.spark.sql.{Row, DataFrame}
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
 import org.bdgenomics.formats.avro.{Variant, AlignmentRecord, NucleotideContigFragment}
-import parquet.org.codehaus.jackson.map.ObjectMapper
+import org.codehaus.jackson.map.ObjectMapper
 import org.bdgenomics.adam.rdd.ADAMContext._
 
 
