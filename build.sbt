@@ -44,8 +44,6 @@ Revolver.settings: Seq[sbt.Def.Setting[_]]
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs@_*) => MergeStrategy.discard
   case PathList(ps@_*) if ps.last endsWith "reference.conf" => MergeStrategy.concat
-  case PathList(ps@_*) if ps.last endsWith "_SUCCESS" => MergeStrategy.discard
-  case PathList(ps@_*) if ps.last endsWith ".parquet" => MergeStrategy.discard
   case _ => MergeStrategy.first
 }
 
