@@ -3,7 +3,7 @@ package md.fusionworks.adam.jbrowse.core
 import htsjdk.samtools.SAMFileHeader
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, DataFrame}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
 import org.bdgenomics.adam.models.SAMFileHeaderWritable
 import org.bdgenomics.formats.avro.{Variant, AlignmentRecord, NucleotideContigFragment}
