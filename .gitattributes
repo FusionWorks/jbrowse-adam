@@ -1,0 +1,4 @@
+*.parquet filter=lfs diff=lfs merge=lfs -text
+sample/ filter=lfs diff=lfs merge=lfs -text
+*.adam filter=lfs diff=lfs merge=lfs -text
+_SUCCESS filter=lfs diff=lfs merge=lfs -text

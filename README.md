@@ -3,7 +3,7 @@ This project implements sample integration between JBrowse and Adam file format
 
 ###Preliminary preparations:
 
-In folder resources/sample exists tracks for test purpose. dedupped_20.bam.adam don't contain all data. Only first 100 Mb of 550.
+In folder resources/sample exists tracks for test purpose. dedupped_20.bam.adam don't contain all data. Only first 100 Mb of 550. These files is located at Git LFS storage (https://git-lfs.github.com/), to download them, please, install this extension. Full data (need to convert in ADAM format) can be founded here: ftp://gsapubftp-anonymous@ftp.broadinstitute.org (tutorial_files.zip)
 
 File local.conf already configured to use them in local-mode.
 
