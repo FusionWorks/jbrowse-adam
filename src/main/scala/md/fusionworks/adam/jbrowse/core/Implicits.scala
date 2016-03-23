@@ -5,7 +5,7 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
 import org.bdgenomics.adam.converters.AlignmentRecordConverter
-import org.bdgenomics.adam.models.SAMFileHeaderWritable
+import org.bdgenomics.adam.models.{RecordGroupDictionary, SAMFileHeaderWritable}
 import org.bdgenomics.formats.avro.{Variant, AlignmentRecord, NucleotideContigFragment}
 import org.codehaus.jackson.map.ObjectMapper
 import org.bdgenomics.adam.rdd.ADAMContext._
@@ -117,7 +117,7 @@ object RecordConverter {
       case Some(h) => h
       case None =>
         val sd = alignmentRDD.adamGetSequenceDictionary()
-        val rgd = alignmentRDD.adamGetReadGroupDictionary()
+        val rgd = RecordGroupDictionary.empty
         val converter = new AlignmentRecordConverter
         val h = converter.createSAMHeader(sd, rgd)
         headerMap += (contigName -> h)
@@ -128,7 +128,7 @@ object RecordConverter {
   }
 
   def alignmentRecToJbFormat(record: AlignmentRecord, header: Broadcast[SAMFileHeaderWritable], converter: AlignmentRecordConverter) = {
-    val samRecord = converter.convert(record, header.value)
+    val samRecord = converter.convert(record, header.value, RecordGroupDictionary.empty)
     var jbRecord = Map(
       "name" -> record.getReadName,
       "seq" -> record.getSequence,
