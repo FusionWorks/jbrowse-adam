@@ -1,20 +1,13 @@
 package md.fusionworks.adam.jbrowse.tools
 
-import htsjdk.samtools.ValidationStringency
 import md.fusionworks.adam.jbrowse.spark.SparkContextFactory
-import org.apache.spark.rdd.RDD
-import org.bdgenomics.adam.models.{RecordGroupDictionary, SequenceDictionary, SequenceRecord, VariantContext}
-import org.bdgenomics.adam.projections.{AlignmentRecordField, Filter}
 import org.bdgenomics.adam.rdd.ADAMContext._
 import org.bdgenomics.adam.rdd.ADAMSaveAnyArgs
-import org.bdgenomics.adam.rdd.read.AlignmentRecordRDD
-import org.bdgenomics.formats.avro.{Contig, RecordGroupMetadata}
 import org.bdgenomics.utils.cli.{Args4jBase, ParquetArgs}
-import org.kohsuke.args4j.{Argument, Option}
 
-case class argsTemplate(var outputPath: String = null) extends ADAMSaveAnyArgs with ParquetArgs {
-  val sortFastqOutput: Boolean = false
-  val asSingleFile: Boolean = false
+case class argsTemplate(var outputPath: String = null) extends Args4jBase with ADAMSaveAnyArgs with ParquetArgs {
+  var sortFastqOutput: Boolean = false
+  var asSingleFile: Boolean = false
   val sortReads = false
 }
 
