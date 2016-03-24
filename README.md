@@ -51,7 +51,7 @@ AdamConverter.vcfToADAM("file:///path/to/file/generic_data.vcf", "file:///path/t
 Allowed operations:
 * fastaToADAM
 * vcfToADAM
-* bam_samToADAM
+* transformToADAM (bam, sam, fastq, fq, ifq)
 
 ###To convert genomic data to ADAM format (EMR/S3 example):
 

@@ -3,7 +3,7 @@ organization := "md.fusionworks"
 
 version := "0.1"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.10.5"
 
 //uncomment this to use `sbt dependencies`
 /*
@@ -28,7 +28,7 @@ lazy val sprayDependencies = {
   )
 }
 
-lazy val adamDependencies = Seq("org.bdgenomics.adam" %% "adam-core" % "0.17.0" % "provided")
+lazy val adamDependencies = Seq("org.bdgenomics.adam" %% "adam-core" % "0.19.0" % "provided")
 
 
 lazy val sparkDependencies = {
