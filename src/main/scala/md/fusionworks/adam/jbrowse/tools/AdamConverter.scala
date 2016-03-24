@@ -25,7 +25,6 @@ object AdamConverter {
     //getSparkContext(inputPath).loadVariants(inputPath).adamParquetSave(outputPath)
     getSparkContext(inputPath)
       .loadVcf(inputPath, sd = None)
-      .coalesce(numPartitions = -1, shuffle = false)
       .flatMap(_.genotypes)
       .adamParquetSave(argsTemplate(outputPath))
   }
