@@ -28,7 +28,7 @@ lazy val sprayDependencies = {
   )
 }
 
-lazy val adamDependencies = Seq("org.bdgenomics.adam" %% "adam-core" % "0.19.0")
+lazy val adamDependencies = Seq("org.bdgenomics.adam" %% "adam-core" % "0.19.0" % "provided")
 
 
 lazy val sparkDependencies = {
