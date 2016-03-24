@@ -31,9 +31,7 @@ object ConvertToAdam extends App {
   args(0).toLowerCase.split('.').drop(1).lastOption match {
     case Some("fasta") =>
       AdamConverter.fastaToADAM(args(0), args(1))
-    case Some("bam") =>
-      AdamConverter.bam_samToADAM(args(0), args(1))
-    case Some("sam") =>
+    case Some("bam") | Some("sam") =>
       AdamConverter.bam_samToADAM(args(0), args(1))
     case Some("vcf") =>
       AdamConverter.vcfToADAM(args(0), args(1))

@@ -13,7 +13,7 @@ lazy val pr = (project in file(".")).enablePlugins(PlayScala)
 */
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
-libraryDependencies ++= sprayDependencies ++ adamDependencies ++ sparkDependencies
+libraryDependencies ++= sparkDependencies ++ sprayDependencies ++ adamDependencies
 
 mainClass in Compile := Some("md.fusionworks.adam.jbrowse.Boot")
 
