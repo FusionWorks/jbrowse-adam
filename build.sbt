@@ -3,7 +3,7 @@ organization := "md.fusionworks"
 
 version := "0.1"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.10.5"
 
 //uncomment this to use `sbt dependencies`
 /*
