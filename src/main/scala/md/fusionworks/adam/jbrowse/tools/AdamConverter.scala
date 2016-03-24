@@ -14,7 +14,6 @@ case class argsTemplate(var outputPath: String = null) extends Args4jBase with A
 object AdamConverter {
 
   def fastaToADAM(inputPath: String, outputPath: String) = {
-    //getSparkContext(inputPath).loadSequence(inputPath).adamParquetSave(outputPath)
     getSparkContext(inputPath)
       .loadFasta(inputPath, 10000L)
       .adamParquetSave(argsTemplate(outputPath))
@@ -22,7 +21,6 @@ object AdamConverter {
   }
 
   def vcfToADAM(inputPath: String, outputPath: String) = {
-    //getSparkContext(inputPath).loadVariants(inputPath).adamParquetSave(outputPath)
     getSparkContext(inputPath)
       .loadVcf(inputPath, sd = None)
       .flatMap(_.genotypes)
@@ -30,7 +28,6 @@ object AdamConverter {
   }
 
   def transformToADAM(inputPath: String, outputPath: String) = {
-    //getSparkContext(inputPath).loadAlignments(inputPath).rdd.adamParquetSave(outputPath)
     val aRdd = getSparkContext(inputPath).loadBam(inputPath)
     val args = argsTemplate(outputPath)
     val (rdd, sd, rgd) = (aRdd.rdd, aRdd.sequences, aRdd.recordGroups)
