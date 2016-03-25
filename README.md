@@ -92,7 +92,7 @@ Now need to wait (about 7 min).
     --master yarn-client \
     --num-executors 50 \
     --executor-memory 8g \
-    --packages org.bdgenomics.adam:adam-core_2.10:0.17.0 \
+    --packages org.bdgenomics.adam:adam-core:0.16.0 \
     --class md.fusionworks.adam.jbrowse.Boot target/scala-2.10/jbrowse-adam-assembly-0.1.jar
 ```
 
@@ -138,7 +138,7 @@ spark-submit \
 --num-executors 50 \
 --conf spark.executor.memory=8g \
 --driver-memory=8g \
---packages org.bdgenomics.adam:adam-core_2ю10:0.17.0 \
+--packages org.bdgenomics.adam:adam-core:0.16.0 \
 --class md.fusionworks.adam.jbrowse.tools.ConvertToAdam \
 target/scala-2.10/jbrowse-adam-assembly-0.1.jar \
 s3n://path/to/legacy/genetic/file/_data.bam \
