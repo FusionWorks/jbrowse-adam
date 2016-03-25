@@ -1,5 +1,5 @@
 # Introduction
-Project `jbrowse-adam` implements sample integration between [JBrowse](http://jbrowse.org/ "JBrowse") and [ADAM file formats](https://github.com/bigdatagenomics/adam "ADAM").
+Project **jbrowse-adam** implements sample integration between [JBrowse](http://jbrowse.org/ "JBrowse") and [ADAM file formats](https://github.com/bigdatagenomics/adam "ADAM").
 
 ##Preliminary preparations:
 
@@ -13,7 +13,7 @@ Alternatively we can convert full data (`tutorial_files.zip` at `ftp://gsapubftp
 
 Before start, we need to install latest versions of `Java`, `Scala` and `SBT`, if they are not already installed.
 
-In `jbrowse-adam` folder type `sbt "run local"` or launch `sbt` and type `re-start local` or in `application.conf` set `config.path = "local"`
+In `jbrowse-adam` folder type `sbt "run local"` or launch `sbt` and type `re-start local` or in file `application.conf` set `config.path = "local"` and type `sbt run`.
 
 ###To run ``jbrowse-adam`` in "cluster-mode":
 
@@ -25,7 +25,7 @@ But, need to correct paths in file `cluster.conf`, see in example below.
 
 ####Cluster creation
 
-We tested project on these settings of cluster (when create cluster, switch to Advanced options):
+We tested project on these settings of cluster (when create cluster, switch to `Advanced options`):
 
 **Software and Steps**:
 * Vendor: `Amazon`
@@ -51,8 +51,8 @@ Now need to wait (about 7 min).
 
 ####Access to cluster via SSH and web browser
 
-* In cluster details search `Master public DNS` and press `SSH`
-* Copy string for access to cluster from console:
+* In `Cluster details` search `Master public DNS` and press `SSH`
+* Copy string for access to cluster from the console:
 
     ```ssh -i ~/you-key-pair.pem hadoop@ec2-XX-XX-XXX-XXX.us-west-1.compute.amazonaws.com```
 
@@ -62,7 +62,7 @@ Now need to wait (about 7 min).
 
 ####Preparing data and code base
 
-* Upload genomic data to S3 bucket (closest to cluster!!!)
+* Upload genomic data to S3 bucket. In order to reduce delays, the S3 bucket should be located in the same region as the EMR cluster.
 * Install `git` and `sbt` on cluster:
 ```
     sudo yum install git
@@ -77,7 +77,7 @@ Now need to wait (about 7 min).
 
     `nano src/main/resources/cluster.conf`
 
-    Change all filePath to yours
+    Change all `filePath` to yours paths at S3 bucket (s3n://...)
 
     Ctrl+O - save changes, Ctrl+X - exit
 * Assembly code with:
@@ -86,7 +86,7 @@ Now need to wait (about 7 min).
 ``
 
     Until the project is assembling, you can drink tea. It is a long process.
-* Submit app:
+* Launch `jbrowse-adam` with command:
 ```
     spark-submit \
     --master yarn-client \
@@ -96,17 +96,17 @@ Now need to wait (about 7 min).
     --class md.fusionworks.adam.jbrowse.Boot target/scala-2.10/jbrowse-adam-assembly-0.1.jar
 ```
 
-This command works for extreme big files (35+ Gb). You may decrease or remove at all (use default values): `--num-executors`, `--executor-memory`, `--driver-memory`.
+This command works for extreme big genomic files (35+ Gb). You may decrease or remove at all (use default values): `--num-executors`, `--executor-memory`, `--driver-memory`.
 
 ####See results in browser:
 
-Assume, that we have master public DNS: `ec2-XX-XXX-XXX-XXX.us-west-1.compute.amazonaws.com`
+Assume, that we have master public DNS: `ec2-XX-XXX-XXX-XXX.us-west-1.compute.amazonaws.com`. In apperas in `Cluster details`.
 
 When web connection is enabled, we can access some interesting addresses:
 
-* JBrowse: `http://ec2-XX-XXX-XXX-XXX.us-west-1.compute.amazonaws.com:8080/`
-* Spark jobs: `http://ec2-XX-XXX-XXX-XXX.us-west-1.compute.amazonaws.com:4040/`
-* Alternatively, we can see Spark jobs with CSS styles in `Cluster details`, `Resource Manager`, `Application master`
+* JBrowse: `http://ec2-XX-XXX-XXX-XXX.us-west-1.compute.amazonaws.com:8080`
+* Spark jobs: `http://ec2-XX-XXX-XXX-XXX.us-west-1.compute.amazonaws.com:4040`
+* Alternatively, we can see Spark jobs with CSS styles in `Cluster details` -> `Resource Manager` -> `Application master`.
 
 ####Terminate cluster job:
 
@@ -120,12 +120,12 @@ import md.fusionworks.adam.jbrowse.tools._
 AdamConverter.vcfToADAM("file:///path/to/genetic/file_data.vcf", "file:///path/to/genetic/file_data.vcf.adam")
 ```
 
-Allowed operations:
+Available operations:
 * fastaToADAM
 * vcfToADAM
 * bam_samToADAM
 
-Examples of keys, when receive Out of memory errors:
+If we got `Out of memory errors`, we should give to JVM more memory. For example:
 
 `sbt console -J-XX:-UseGCOverheadLimit  -J-Xms1024M -J-Xmx2048M -J-XX:+PrintFlagsFinal`
 
@@ -144,4 +144,4 @@ target/scala-2.10/jbrowse-adam-assembly-0.1.jar \
 s3n://path/to/legacy/genetic/file/_data.bam \
 s3n://path/to/new/adam/genetic/file_data.bam.adam
 ```
-This example works for extreme big files (35+ Gb). You may decrease or remove at all (use default values): num-executors, spark.executor.memory, driver-memory.
+This example works for extreme big files (35+ Gb). You may decrease or remove at all (use default values): `--num-executors`, `--conf spark.executor.memory`, `--driver-memory`.
