@@ -53,7 +53,9 @@ Now need to wait (about 7 min).
 
 * In cluster details search `Master public DNS` and press `SSH`
 * Copy string for access to cluster from console:
+
     ```ssh -i ~/you-key-pair.pem hadoop@ec2-XX-XX-XXX-XXX.us-west-1.compute.amazonaws.com```
+
     It is meant that the key pairs file `you-key-pair.pem` are in the user's root directory, e.g. `/home/user` and have access rights 600 (`chmod 600 ~/you-key-pair.pem`)
 * SSH into EMR master instance with command above.
 * To see work of cluster in browser - press `Enable web connection` and follow instructions, details see below.
@@ -62,26 +64,37 @@ Now need to wait (about 7 min).
 
 * Upload genomic data to S3 bucket (closest to cluster!!!)
 * Install `git` and `sbt` on cluster:
-    ```sudo yum install git
+```
+    sudo yum install git
     curl https://bintray.com/sbt/rpm/rpm | sudo tee /etc/yum.repos.d/bintray-sbt-rpm.repo
-    sudo yum install sbt```
+    sudo yum install sbt
+```
 * Clone code with:
+
     `git clone --recursive https://github.com/FusionWorks/jbrowse-adam.git`
 * ```cd jbrowse-adam```
 * Edit paths to genomic data:
+
     `nano src/main/resources/cluster.conf`
+
     Change all filePath to yours
+
     Ctrl+O - save changes, Ctrl+X - exit
 * Assembly code with:
-    `sbt assembly`
+```
+    sbt assembly
+```
+
     Until the project is assembling, you can drink tea. It is a long process.
 * Submit app:
-    ```spark-submit \
+```
+    spark-submit \
     --master yarn-client \
     --num-executors 50 \
     --executor-memory 8g \
     --packages org.bdgenomics.adam:adam-core_2.10:0.17.0 \
-    --class md.fusionworks.adam.jbrowse.Boot target/scala-2.10/jbrowse-adam-assembly-0.1.jar```
+    --class md.fusionworks.adam.jbrowse.Boot target/scala-2.10/jbrowse-adam-assembly-0.1.jar
+```
 
 This command works for extreme big files (35+ Gb). You may decrease or remove at all (use default values): `--num-executors`, `--executor-memory`, `--driver-memory`.
 
