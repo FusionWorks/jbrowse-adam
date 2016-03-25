@@ -81,9 +81,9 @@ Now need to wait (about 7 min).
 
     Ctrl+O - save changes, Ctrl+X - exit
 * Assembly code with:
-```
+``
     sbt assembly
-```
+``
 
     Until the project is assembling, you can drink tea. It is a long process.
 * Submit app:
@@ -106,7 +106,7 @@ When web connection is enabled, we can access some interesting addresses:
 
 * JBrowse: `http://ec2-XX-XXX-XXX-XXX.us-west-1.compute.amazonaws.com:8080/`
 * Spark jobs: `http://ec2-XX-XXX-XXX-XXX.us-west-1.compute.amazonaws.com:4040/`
-* Alternatively, we can see Spark jobs in `Cluster details`, `Resource Manager`, `Application master`
+* Alternatively, we can see Spark jobs with CSS styles in `Cluster details`, `Resource Manager`, `Application master`
 
 ####Terminate cluster job:
 
@@ -138,7 +138,7 @@ spark-submit \
 --num-executors 50 \
 --conf spark.executor.memory=8g \
 --driver-memory=8g \
---packages org.bdgenomics.adam:adam-core:0.17.0 \
+--packages org.bdgenomics.adam:adam-core_2ю10:0.17.0 \
 --class md.fusionworks.adam.jbrowse.tools.ConvertToAdam \
 target/scala-2.10/jbrowse-adam-assembly-0.1.jar \
 s3n://path/to/legacy/genetic/file/_data.bam \
