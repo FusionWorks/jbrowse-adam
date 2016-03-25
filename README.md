@@ -110,7 +110,7 @@ When web connection is enabled, we can access some interesting addresses:
 
 ####Terminate cluster job:
 
-* ALt+C
+* Ctrl+C
 
 ###Convert genomic data to ADAM format (local example):
 ```
