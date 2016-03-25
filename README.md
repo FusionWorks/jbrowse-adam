@@ -13,7 +13,7 @@ Alternatively you can convert [full data](ftp://gsapubftp-anonymous@ftp.broadins
 
 Before start, need to install latest versions of `Java`, `Scala` and `SBT`, if they are not already installed.
 
-In `jbrowse-adam` type `sbt "run local"` or in sbt-console type `re-start local` or in application.conf set `config.path = "local"`
+In `jbrowse-adam` type `sbt "run local"` or launch `sbt` and type `re-start local` or in `application.conf` set `config.path = "local"`
 
 ###To run ``jbrowse-adam`` in "cluster-mode":
 
@@ -101,10 +101,10 @@ spark-submit \
 This example works for extreme big files (35+ Gb). You may decrease or remove at all (use default values): `num-executors`, `executor-memory`, `driver-memory`.
 
 ###Convert genomic data to ADAM format (local example):
-````
+```
 cd jbrowse-adam
 sbt console
-```import md.fusionworks.adam.jbrowse.tools._
+import md.fusionworks.adam.jbrowse.tools._
 AdamConverter.vcfToADAM("file:///path/to/genetic/file_data.vcf", "file:///path/to/genetic/file_data.vcf.adam")
 ```
 
@@ -112,6 +112,10 @@ Allowed operations:
 * fastaToADAM
 * vcfToADAM
 * bam_samToADAM
+
+Examples of keys, when receive Out of memory errors:
+
+`sbt console -J-XX:-UseGCOverheadLimit  -J-Xms1024M -J-Xmx2048M -J-XX:+PrintFlagsFinal`
 
 ###Convert genomic data to ADAM format (EMR/S3 example):
 
