@@ -1,3 +1,5 @@
+**This is experimental branch for ADAM 0.19.0. Converter works (don't write seqdict and rgdict to S3). Read of RDD data failed**
+
 # Introduction
 This project implements sample integration between JBrowse and Adam file format
 
