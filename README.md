@@ -1,25 +1,25 @@
 # Introduction
-This project implements sample integration between [JBrowse](http://jbrowse.org/ "JBrowse") and [ADAM file formats](https://github.com/bigdatagenomics/adam "ADAM").
+Project `jbrowse-adam` implements sample integration between [JBrowse](http://jbrowse.org/ "JBrowse") and [ADAM file formats](https://github.com/bigdatagenomics/adam "ADAM").
 
 ##Preliminary preparations:
 
-To run ``jbrowse-adam`` we need some files with genomic data. These files are physically located on at Git LFS storage ([https://git-lfs.github.com/]()). Please, before clone project, install this extension to property download them. File `local.conf` already configured to use this genomic data files in local-mode.
+To run `jbrowse-adam` we need some files with genomic data. Sample files is attached to project, but physically located on at Git LFS storage ([https://git-lfs.github.com/]()). Please, before clone project, install this extension to property download them. File `local.conf` already configured to use this genomic data files in `local-mode`.
 
-Alternatively you can convert [full data](ftp://gsapubftp-anonymous@ftp.broadinstitute.org) (tutorial_files.zip) in ADAM format, how to do it, it is written below)
+Alternatively we can convert full data (`tutorial_files.zip` at `ftp://gsapubftp-anonymous@ftp.broadinstitute.org`) in ADAM format, how to do it, it is written below.
 
 ##Launch application
 
 ###To run ``jbrowse-adam`` in "local-mode":
 
-Before start, need to install latest versions of `Java`, `Scala` and `SBT`, if they are not already installed.
+Before start, we need to install latest versions of `Java`, `Scala` and `SBT`, if they are not already installed.
 
-In `jbrowse-adam` type `sbt "run local"` or launch `sbt` and type `re-start local` or in `application.conf` set `config.path = "local"`
+In `jbrowse-adam` folder type `sbt "run local"` or launch `sbt` and type `re-start local` or in `application.conf` set `config.path = "local"`
 
 ###To run ``jbrowse-adam`` in "cluster-mode":
 
 By default nothing no need to change in `application.conf`, when `config.path = "cluster"`
 
-But, need to correct paths in file `cluster.conf`, see below.
+But, need to correct paths in file `cluster.conf`, see in example below.
 
 ###Example of launch on Amazon EMR Cluster
 
@@ -37,19 +37,19 @@ We tested project on these settings of cluster (when create cluster, switch to A
 * Core: 2x `m3.xlarge`
 * Task: 10x `m3.xlarge`
 
-We also tested big data at r3.xlarge EC2 instances and received a boost in performance when process really big data.
+We also tested big data at `r3.xlarge` EC2 instances and received a boost in performance when process really big data.
 
 **General cluster Settings:**
 * Uncheck termination protection
 
 **Security**:
-* EC2 Key Pair - need to be created by EC2 admin and specified here. This pair need for ssh access.
+* `EC2 Key Pair` - need to be created by EC2 admin and specified here. This pair need for ssh access.
 
 Press ***Create Cluster*** button
 
 Now need to wait (about 7 min).
 
-####Access to cluster via SSH and browser
+####Access to cluster via SSH and web browser
 
 * In cluster details search `Master public DNS` and press `SSH`
 * Copy string for access to cluster from console:
